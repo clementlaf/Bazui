@@ -118,23 +118,9 @@ def delete_section(project_name: str, section_id: str) -> None:
 
     # delete the section directory
     if os.path.exists(f"{project_name}/sections/{section_id}"):
-        os.rmdir(f"{project_name}/sections/{section_id}")
+        shutil.rmtree(f"{project_name}/sections/{section_id}")
     else:
         print("Section does not exist.")
-
-def delete_link(project_name: str, link_id: str) -> None:
-    """This function will delete a link from the project.
-
-    Args:
-        project_name (str): The name of the project.
-        link_id (str): The id of the link.
-    """
-
-    # delete the link directory
-    if os.path.exists(f"{project_name}/links/{link_id}"):
-        os.rmdir(f"{project_name}/links/{link_id}")
-    else:
-        print("Link does not exist.")
 
 def add_image(project_name: str, image_path: str) -> None:
     """This function will add an image to the project.
@@ -332,3 +318,17 @@ def get_image_path(project_name: str, image_id: str) -> str|None:
                               image_name) if image_name else None
 
     return image_path
+
+def list_sections(project_name: str) -> List[str]:
+    """This function will return the list of sections in the project.
+
+    Args:
+        project_name (str): The name of the project.
+
+    Returns:
+        list: The list of sections.
+    """
+
+    sections = os.listdir(f"{project_name}/sections")
+
+    return sections

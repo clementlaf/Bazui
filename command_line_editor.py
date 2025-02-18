@@ -1,3 +1,8 @@
+"""This simple commande line editor is a simple interface to interact with the main module.
+ It allows the user to create, open, and edit projects.
+ It is mainly used for testing purposes.
+"""
+
 import main
 import os
 
@@ -14,6 +19,15 @@ def help():
     print("create _project_name: Create a new project")
     print("move _section_name: Move to a section")
     print("print: Print the current section's links, images, and text")
+    print("add link _link: Add a link to the current section")
+    print("add image _image: Add an image to the current section")
+    print("add text _text: Add text to the current section")
+    print("add section: Add a new section")
+    print("remove link _link: Remove a link from the current section")
+    print("remove image _image: Remove an image from the current section")
+    print("remove section _section_name: Remove a section")
+    print("list: List all sections in the current project")
+
 
 def interface():
     print("My Command Line Editor")
@@ -73,6 +87,20 @@ def interface():
                 main.set_text_to_section(project_opened, current_section, add_value)
             elif add_type == 'section':
                 main.create_section(project_opened)
+        elif command.startswith('remove '):
+            remove_type = command.split(' ')[1]
+            if remove_type == 'link':
+                remove_value = command.split(' ')[2]
+                main.remove_link_from_section(project_opened, current_section, remove_value)
+            elif remove_type == 'image':
+                remove_value = command.split(' ')[2]
+                main.remove_image_from_section(project_opened, current_section, remove_value)
+            elif remove_type == 'section':
+                remove_value = command.split(' ')[2]
+                main.delete_section(project_opened, remove_value)
+        elif command == "list":
+            sections = main.list_sections(project_opened)
+            print(f"Sections: {sections}")
         else:
             print(f"You entered: {command}")
 
