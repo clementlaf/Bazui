@@ -23,7 +23,7 @@ def create_config(project_name):
         "project_root": "1"
     }
 
-    with open(f"{project_name}/config.json", "w") as f:
+    with open(f"{project_name}/config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4)
 
     print("Config file created successfully.")
@@ -101,15 +101,15 @@ def create_section(project_name):
     os.makedirs(f"{project_name}/sections/{section_id}", exist_ok=True)
 
     # create the links json file
-    with open(f"{project_name}/sections/{section_id}/links.json", "w") as f:
+    with open(f"{project_name}/sections/{section_id}/links.json", "w", encoding="utf-8") as f:
         json.dump([], f, indent=4)
 
     # create the images json file
-    with open(f"{project_name}/sections/{section_id}/images.json", "w") as f:
+    with open(f"{project_name}/sections/{section_id}/images.json", "w", encoding="utf-8") as f:
         json.dump([], f, indent=4)
 
     # create the text file
-    with open(f"{project_name}/sections/{section_id}/text.txt", "w") as f:
+    with open(f"{project_name}/sections/{section_id}/text.txt", "w", encoding="utf-8") as f:
         f.write("")
 
     print("Section added successfully.")
@@ -165,7 +165,7 @@ def add_image(project_name, image_path):
     image_format = image_path.split(".")[-1]
 
     # read the config file
-    with open(f"{project_name}/config.json", "r") as f:
+    with open(f"{project_name}/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
 
     # check if the image format is accepted
@@ -188,15 +188,19 @@ def add_link_to_section(project_name, section_id, section_linked_id):
 
     print(f"Adding link: {section_linked_id} to section: {section_id}")
 
+    if section_id == section_linked_id:
+        print("Can't link a section to itself.")
+        return
+
     # read the links json file
-    with open(f"{project_name}/sections/{section_id}/links.json", "r") as f:
+    with open(f"{project_name}/sections/{section_id}/links.json", "r", encoding="utf-8") as f:
         links = json.load(f)
 
     # add the link to the links json file
     if section_linked_id not in links:
         links.append(section_linked_id)
 
-    with open(f"{project_name}/sections/{section_id}/links.json", "w") as f:
+    with open(f"{project_name}/sections/{section_id}/links.json", "w", encoding="utf-8") as f:
         json.dump(links, f, indent=4)
 
     print("Link added successfully.")
@@ -213,14 +217,140 @@ def add_image_to_section(project_name, section_id, image_id):
     print(f"Adding image: {image_id} to section: {section_id}")
 
     # read the images json file
-    with open(f"{project_name}/sections/{section_id}/images.json", "r") as f:
+    with open(f"{project_name}/sections/{section_id}/images.json", "r", encoding="utf-8") as f:
         images = json.load(f)
 
     # add the image to the images json file
     if image_id not in images:
         images.append(image_id)
 
-    with open(f"{project_name}/sections/{section_id}/images.json", "w") as f:
+    with open(f"{project_name}/sections/{section_id}/images.json", "w", encoding="utf-8") as f:
         json.dump(images, f, indent=4)
 
     print("Image added successfully.")
+
+def remove_link_from_section(project_name, section_id, section_linked_id):
+    """This function will remove a link from a section.
+
+    Args:
+        project_name (str): The name of the project.
+        section_id (str): The id of the section.
+        section_linked_id (str): The id of the link.
+    """
+
+    print(f"Removing link: {section_linked_id} from section: {section_id}")
+
+    # read the links json file
+    with open(f"{project_name}/sections/{section_id}/links.json", "r", encoding="utf-8") as f:
+        links = json.load(f)
+
+    # remove the link from the links json file
+    if section_linked_id in links:
+        links.remove(section_linked_id)
+
+    with open(f"{project_name}/sections/{section_id}/links.json", "w", encoding="utf-8") as f:
+        json.dump(links, f, indent=4)
+
+    print("Link removed successfully.")
+
+def remove_image_from_section(project_name, section_id, image_id):
+    """This function will remove an image from a section.
+
+    Args:
+        project_name (str): The name of the project.
+        section_id (str): The id of the section.
+        image_id (str): The id of the image.
+    """
+
+    print(f"Removing image: {image_id} from section: {section_id}")
+
+    # read the images json file
+    with open(f"{project_name}/sections/{section_id}/images.json", "r", encoding="utf-8") as f:
+        images = json.load(f)
+
+    # remove the image from the images json file
+    if image_id in images:
+        images.remove(image_id)
+
+    with open(f"{project_name}/sections/{section_id}/images.json", "w", encoding="utf-8") as f:
+        json.dump(images, f, indent=4)
+
+    print("Image removed successfully.")
+
+def set_text_to_section(project_name, section_id, text=""):
+    """This function will set the text of a section.
+
+    Args:
+        project_name (str): The name of the project.
+        section_id (str): The id of the section.
+        text (str, optional): The text to set. Defaults to
+        an empty string.
+    """
+
+    print(f"Setting text to section: {section_id}")
+
+    # write the text to the text file
+    with open(f"{project_name}/sections/{section_id}/text.txt", "w", encoding="utf-8") as f:
+        f.write(text)
+
+    print("Text set successfully.")
+
+def get_text_from_section(project_name, section_id):
+    """This function will return the text of a section.
+
+    Args:
+        project_name (str): The name of the project.
+        section_id (str): The id of the section.
+
+    Returns:
+        str: The text of the section.
+    """
+
+    print(f"Getting text from section: {section_id}")
+
+    # read the text file
+    with open(f"{project_name}/sections/{section_id}/text.txt", "r", encoding="utf-8") as f:
+        text = f.read()
+
+    print("Text got successfully.")
+
+    return text
+
+def get_links_from_section(project_name, section_id):
+    """This function will return the links of a section.
+
+    Args:
+        project_name (str): The name of the project.
+        section_id (str): The id of the section.
+
+    Returns:
+        list: The links of the section.
+    """
+
+    print(f"Getting links from section: {section_id}")
+
+    # read the links json file
+    with open(f"{project_name}/sections/{section_id}/links.json", "r", encoding="utf-8") as f:
+        links = json.load(f)
+
+    print("Links got successfully.")
+
+    return links
+
+def get_images_from_section(project_name, section_id):
+    """This function will return the images of a section.
+
+    Args:
+        project_name (str): The name of the project.
+        section_id (str): The id of the section.
+    """
+
+    print(f"Getting images from section: {section_id}")
+
+    # read the images json file
+    with open(f"{project_name}/sections/{section_id}/images.json", "r", encoding="utf-8") as f:
+        images = json.load(f)
+
+    print("Images got successfully.")
+
+    return images
