@@ -13,8 +13,6 @@ def create_config(project_name: str) -> None:
         project_name (str): The name of the project.
     """
 
-    print(f"Creating config file for project: {project_name}")
-
     accepted_image_formats = ["jpg", "jpeg", "png", "gif"]
 
     # create the config file
@@ -27,16 +25,12 @@ def create_config(project_name: str) -> None:
     with open(f"{project_name}/config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4)
 
-    print("Config file created successfully.")
-
 def create_project(project_name: str) -> None:
     """This function will create a new project with the given name.
 
     Args:
         project_name (str): The name of the project.
     """
-
-    print(f"Creating project: {project_name}")
 
     # create the project directory
     os.makedirs(project_name, exist_ok=True)
@@ -52,8 +46,6 @@ def create_project(project_name: str) -> None:
 
     # add a base empty section
     create_section(project_name)
-
-    print("Project created successfully.")
 
 def get_free_section_id(project_name: str) -> str:
     """This function will return a free section id for the project.
@@ -98,7 +90,6 @@ def create_section(project_name: str) -> str:
     """
 
     section_id = get_free_section_id(project_name)
-    print(f"Adding section: {section_id}")
 
     # create the section directory
     os.makedirs(f"{project_name}/sections/{section_id}", exist_ok=True)
@@ -115,8 +106,6 @@ def create_section(project_name: str) -> str:
     with open(f"{project_name}/sections/{section_id}/text.txt", "w", encoding="utf-8") as f:
         f.write("")
 
-    print("Section added successfully.")
-
     return section_id
 
 def delete_section(project_name: str, section_id: str) -> None:
@@ -127,15 +116,11 @@ def delete_section(project_name: str, section_id: str) -> None:
         section_id (str): The id of the section.
     """
 
-    print(f"Deleting section: {section_id}")
-
     # delete the section directory
     if os.path.exists(f"{project_name}/sections/{section_id}"):
         os.rmdir(f"{project_name}/sections/{section_id}")
     else:
         print("Section does not exist.")
-
-    print("Section deleted successfully.")
 
 def delete_link(project_name: str, link_id: str) -> None:
     """This function will delete a link from the project.
@@ -145,15 +130,11 @@ def delete_link(project_name: str, link_id: str) -> None:
         link_id (str): The id of the link.
     """
 
-    print(f"Deleting link: {link_id}")
-
     # delete the link directory
     if os.path.exists(f"{project_name}/links/{link_id}"):
         os.rmdir(f"{project_name}/links/{link_id}")
     else:
         print("Link does not exist.")
-
-    print("Link deleted successfully.")
 
 def add_image(project_name: str, image_path: str) -> None:
     """This function will add an image to the project.
@@ -163,7 +144,6 @@ def add_image(project_name: str, image_path: str) -> None:
         image_path (str): The path of the image.
     """
 
-    print(f"Adding image: {image_path}")
     image_id = get_free_image_id(project_name)
 
     # get the image format
@@ -180,8 +160,6 @@ def add_image(project_name: str, image_path: str) -> None:
     else:
         print("Image format not accepted.")
 
-    print("Image added successfully.")
-
 def add_link_to_section(project_name: str, section_id: str, section_linked_id: str) -> None:
     """This function will add a link to a section.
 
@@ -190,8 +168,6 @@ def add_link_to_section(project_name: str, section_id: str, section_linked_id: s
         section_id (str): The id of the section.
         section_linked_id (str): The id of the link.
     """
-
-    print(f"Adding link: {section_linked_id} to section: {section_id}")
 
     if section_id == section_linked_id:
         print("Can't link a section to itself.")
@@ -208,8 +184,6 @@ def add_link_to_section(project_name: str, section_id: str, section_linked_id: s
     with open(f"{project_name}/sections/{section_id}/links.json", "w", encoding="utf-8") as f:
         json.dump(links, f, indent=4)
 
-    print("Link added successfully.")
-
 def add_image_to_section(project_name: str, section_id: str, image_id: str) -> None:
     """This function will add an image to a section.
 
@@ -218,8 +192,6 @@ def add_image_to_section(project_name: str, section_id: str, image_id: str) -> N
         section_id (str): The id of the section.
         image_id (str): The id of the image.
     """
-
-    print(f"Adding image: {image_id} to section: {section_id}")
 
     # read the images json file
     with open(f"{project_name}/sections/{section_id}/images.json", "r", encoding="utf-8") as f:
@@ -232,8 +204,6 @@ def add_image_to_section(project_name: str, section_id: str, image_id: str) -> N
     with open(f"{project_name}/sections/{section_id}/images.json", "w", encoding="utf-8") as f:
         json.dump(images, f, indent=4)
 
-    print("Image added successfully.")
-
 def remove_link_from_section(project_name: str, section_id: str, section_linked_id: str) -> None:
     """This function will remove a link from a section.
 
@@ -242,8 +212,6 @@ def remove_link_from_section(project_name: str, section_id: str, section_linked_
         section_id (str): The id of the section.
         section_linked_id (str): The id of the link.
     """
-
-    print(f"Removing link: {section_linked_id} from section: {section_id}")
 
     # read the links json file
     with open(f"{project_name}/sections/{section_id}/links.json", "r", encoding="utf-8") as f:
@@ -256,8 +224,6 @@ def remove_link_from_section(project_name: str, section_id: str, section_linked_
     with open(f"{project_name}/sections/{section_id}/links.json", "w", encoding="utf-8") as f:
         json.dump(links, f, indent=4)
 
-    print("Link removed successfully.")
-
 def remove_image_from_section(project_name: str, section_id: str, image_id: str) -> None:
     """This function will remove an image from a section.
 
@@ -266,8 +232,6 @@ def remove_image_from_section(project_name: str, section_id: str, image_id: str)
         section_id (str): The id of the section.
         image_id (str): The id of the image.
     """
-
-    print(f"Removing image: {image_id} from section: {section_id}")
 
     # read the images json file
     with open(f"{project_name}/sections/{section_id}/images.json", "r", encoding="utf-8") as f:
@@ -280,8 +244,6 @@ def remove_image_from_section(project_name: str, section_id: str, image_id: str)
     with open(f"{project_name}/sections/{section_id}/images.json", "w", encoding="utf-8") as f:
         json.dump(images, f, indent=4)
 
-    print("Image removed successfully.")
-
 def set_text_to_section(project_name: str, section_id: str, text: str = "") -> None:
     """This function will set the text of a section.
 
@@ -292,13 +254,9 @@ def set_text_to_section(project_name: str, section_id: str, text: str = "") -> N
         an empty string.
     """
 
-    print(f"Setting text to section: {section_id}")
-
     # write the text to the text file
     with open(f"{project_name}/sections/{section_id}/text.txt", "w", encoding="utf-8") as f:
         f.write(text)
-
-    print("Text set successfully.")
 
 def get_text_from_section(project_name: str, section_id: str) -> str:
     """This function will return the text of a section.
@@ -311,13 +269,9 @@ def get_text_from_section(project_name: str, section_id: str) -> str:
         str: The text of the section.
     """
 
-    print(f"Getting text from section: {section_id}")
-
     # read the text file
     with open(f"{project_name}/sections/{section_id}/text.txt", "r", encoding="utf-8") as f:
         text = f.read()
-
-    print("Text got successfully.")
 
     return text
 
@@ -332,13 +286,9 @@ def get_links_from_section(project_name: str, section_id: str) -> List[str]:
         list: The links of the section.
     """
 
-    print(f"Getting links from section: {section_id}")
-
     # read the links json file
     with open(f"{project_name}/sections/{section_id}/links.json", "r", encoding="utf-8") as f:
         links = json.load(f)
-
-    print("Links got successfully.")
 
     return links
 
@@ -353,13 +303,9 @@ def get_images_from_section(project_name: str, section_id: str) -> List[str]:
         list: The images ids of the section
     """
 
-    print(f"Getting images from section: {section_id}")
-
     # read the images json file
     with open(f"{project_name}/sections/{section_id}/images.json", "r", encoding="utf-8") as f:
         images = json.load(f)
-
-    print("Images got successfully.")
 
     return images
 
@@ -374,8 +320,6 @@ def get_image_path(project_name: str, image_id: str) -> str|None:
         str: The path of the image. None if the image does not exist.
     """
 
-    print(f"Getting image path: {image_id}")
-
     image_name = None
 
     all_images = os.listdir(f"{project_name}/images")
@@ -386,7 +330,5 @@ def get_image_path(project_name: str, image_id: str) -> str|None:
 
     image_path = os.path.join(project_name, "images",
                               image_name) if image_name else None
-
-    print("Image path got successfully.")
 
     return image_path
