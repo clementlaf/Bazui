@@ -4,8 +4,9 @@
 import os
 import json
 import shutil
+from typing import List, Dict
 
-def create_config(project_name):
+def create_config(project_name: str) -> None:
     """This function will create a new config file for the project.
 
     Args:
@@ -17,7 +18,7 @@ def create_config(project_name):
     accepted_image_formats = ["jpg", "jpeg", "png", "gif"]
 
     # create the config file
-    config = {
+    config: Dict[str, str | List[str]] = {
         "project_name": project_name,
         "accepted_image_formats": accepted_image_formats,
         "project_root": "1"
@@ -28,7 +29,7 @@ def create_config(project_name):
 
     print("Config file created successfully.")
 
-def create_project(project_name):
+def create_project(project_name: str) -> None:
     """This function will create a new project with the given name.
 
     Args:
@@ -54,7 +55,7 @@ def create_project(project_name):
 
     print("Project created successfully.")
 
-def get_free_section_id(project_name):
+def get_free_section_id(project_name: str) -> str:
     """This function will return a free section id for the project.
 
     Args:
@@ -70,7 +71,7 @@ def get_free_section_id(project_name):
         if str(i) not in section_ids:
             return str(i)
 
-def get_free_image_id(project_name):
+def get_free_image_id(project_name: str) -> str:
     """This function will return a free image id for the project.
 
     Args:
@@ -86,12 +87,14 @@ def get_free_image_id(project_name):
         if str(i) not in image_ids:
             return str(i)
 
-def create_section(project_name):
+def create_section(project_name: str) -> str:
     """This function will add a new section to the project.
 
     Args:
         project_name (str): The name of the project.
-        section_name (str): The name of the section.
+    
+    Returns:
+        str: The id of the section.
     """
 
     section_id = get_free_section_id(project_name)
@@ -114,7 +117,9 @@ def create_section(project_name):
 
     print("Section added successfully.")
 
-def delete_section(project_name, section_id):
+    return section_id
+
+def delete_section(project_name: str, section_id: str) -> None:
     """This function will delete a section from the project.
 
     Args:
@@ -132,7 +137,7 @@ def delete_section(project_name, section_id):
 
     print("Section deleted successfully.")
 
-def delete_link(project_name, link_id):
+def delete_link(project_name: str, link_id: str) -> None:
     """This function will delete a link from the project.
 
     Args:
@@ -150,7 +155,7 @@ def delete_link(project_name, link_id):
 
     print("Link deleted successfully.")
 
-def add_image(project_name, image_path):
+def add_image(project_name: str, image_path: str) -> None:
     """This function will add an image to the project.
 
     Args:
@@ -177,7 +182,7 @@ def add_image(project_name, image_path):
 
     print("Image added successfully.")
 
-def add_link_to_section(project_name, section_id, section_linked_id):
+def add_link_to_section(project_name: str, section_id: str, section_linked_id: str) -> None:
     """This function will add a link to a section.
 
     Args:
@@ -205,7 +210,7 @@ def add_link_to_section(project_name, section_id, section_linked_id):
 
     print("Link added successfully.")
 
-def add_image_to_section(project_name, section_id, image_id):
+def add_image_to_section(project_name: str, section_id: str, image_id: str) -> None:
     """This function will add an image to a section.
 
     Args:
@@ -229,7 +234,7 @@ def add_image_to_section(project_name, section_id, image_id):
 
     print("Image added successfully.")
 
-def remove_link_from_section(project_name, section_id, section_linked_id):
+def remove_link_from_section(project_name: str, section_id: str, section_linked_id: str) -> None:
     """This function will remove a link from a section.
 
     Args:
@@ -253,7 +258,7 @@ def remove_link_from_section(project_name, section_id, section_linked_id):
 
     print("Link removed successfully.")
 
-def remove_image_from_section(project_name, section_id, image_id):
+def remove_image_from_section(project_name: str, section_id: str, image_id: str) -> None:
     """This function will remove an image from a section.
 
     Args:
@@ -277,7 +282,7 @@ def remove_image_from_section(project_name, section_id, image_id):
 
     print("Image removed successfully.")
 
-def set_text_to_section(project_name, section_id, text=""):
+def set_text_to_section(project_name: str, section_id: str, text: str = "") -> None:
     """This function will set the text of a section.
 
     Args:
@@ -295,7 +300,7 @@ def set_text_to_section(project_name, section_id, text=""):
 
     print("Text set successfully.")
 
-def get_text_from_section(project_name, section_id):
+def get_text_from_section(project_name: str, section_id: str) -> str:
     """This function will return the text of a section.
 
     Args:
@@ -316,7 +321,7 @@ def get_text_from_section(project_name, section_id):
 
     return text
 
-def get_links_from_section(project_name, section_id):
+def get_links_from_section(project_name: str, section_id: str) -> List[str]:
     """This function will return the links of a section.
 
     Args:
@@ -337,12 +342,15 @@ def get_links_from_section(project_name, section_id):
 
     return links
 
-def get_images_from_section(project_name, section_id):
+def get_images_from_section(project_name: str, section_id: str) -> List[str]:
     """This function will return the images of a section.
 
     Args:
         project_name (str): The name of the project.
         section_id (str): The id of the section.
+    
+    Returns:
+        list: The images ids of the section
     """
 
     print(f"Getting images from section: {section_id}")
@@ -354,3 +362,31 @@ def get_images_from_section(project_name, section_id):
     print("Images got successfully.")
 
     return images
+
+def get_image_path(project_name: str, image_id: str) -> str|None:
+    """This function will return the path of an image.
+
+    Args:
+        project_name (str): The name of the project.
+        image_id (str): The id of the image.
+
+    Returns:
+        str: The path of the image. None if the image does not exist.
+    """
+
+    print(f"Getting image path: {image_id}")
+
+    image_name = None
+
+    all_images = os.listdir(f"{project_name}/images")
+    for image in all_images:
+        if image.split(".")[0] == image_id:
+            image_name = image
+            break
+
+    image_path = os.path.join(project_name, "images",
+                              image_name) if image_name else None
+
+    print("Image path got successfully.")
+
+    return image_path
