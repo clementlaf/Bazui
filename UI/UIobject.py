@@ -4,12 +4,24 @@ import pygame as pg
 
 from UI.vector import Vector as vec
 
+def link(parent_object: "UiObject", child_object: "UiObject"):
+    """links two UI objects
+
+    Args:
+        parent_object (UiObject): the parent object
+        child_object (UiObject): the child object
+    """
+
+    child_object.parent = parent_object
+
+
 class UiObject:
     "main class for all UI objects"
     def __init__(self, position: vec, anchor: str | vec = "topleft", parent=None, size=vec(0, 0)):
         self._position = position
         self._anchor = anchor
-        self._parent = parent
+        self.parent = parent
+        self.childs = []
         self._size = size
 
     def _relative_point_position(self, point: vec):
@@ -102,11 +114,11 @@ class UiObject:
             UiObject: the parent of the object
         """
 
-        return self._parent
+        return self.parent
 
     @parent.setter
     def parent(self, value):
-        self._parent = value
+        self.parent = value
 
     @property
     def rect(self):
