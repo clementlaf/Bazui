@@ -3,7 +3,7 @@
  It is mainly used for testing purposes.
 """
 
-import main
+import datatree
 import os
 
 def clear_console():
@@ -62,15 +62,15 @@ def interface():
             project_opened = project_name
             current_section = "1"
             print(f"Creating project: {project_name}")
-            main.create_project(project_name)
+            datatree.create_project(project_name)
         elif command.startswith('move '):
             section_name = command.split(' ')[1]
             print(f"Moving to section: {section_name}")
             current_section = section_name
         elif command == "print":
-            section_links = main.get_links_from_section(project_opened, current_section)
-            section_images = main.get_images_from_section(project_opened, current_section)
-            section_text = main.get_text_from_section(project_opened, current_section)
+            section_links = datatree.get_links_from_section(project_opened, current_section)
+            section_images = datatree.get_images_from_section(project_opened, current_section)
+            section_text = datatree.get_text_from_section(project_opened, current_section)
             print(f"Links: {section_links}")
             print(f"Images: {section_images}")
             print(f"Text: {section_text}")
@@ -78,28 +78,28 @@ def interface():
             add_type = command.split(' ')[1]
             if add_type == 'link':
                 add_value = command.split(' ')[2]
-                main.add_link_to_section(project_opened, current_section, add_value)
+                datatree.add_link_to_section(project_opened, current_section, add_value)
             elif add_type == 'image':
                 add_value = command.split(' ')[2]
-                main.add_image_to_section(project_opened, current_section, add_value)
+                datatree.add_image_to_section(project_opened, current_section, add_value)
             elif add_type == 'text':
                 add_value = command.split(' ')[2]
-                main.set_text_to_section(project_opened, current_section, add_value)
+                datatree.set_text_to_section(project_opened, current_section, add_value)
             elif add_type == 'section':
-                main.create_section(project_opened)
+                datatree.create_section(project_opened)
         elif command.startswith('remove '):
             remove_type = command.split(' ')[1]
             if remove_type == 'link':
                 remove_value = command.split(' ')[2]
-                main.remove_link_from_section(project_opened, current_section, remove_value)
+                datatree.remove_link_from_section(project_opened, current_section, remove_value)
             elif remove_type == 'image':
                 remove_value = command.split(' ')[2]
-                main.remove_image_from_section(project_opened, current_section, remove_value)
+                datatree.remove_image_from_section(project_opened, current_section, remove_value)
             elif remove_type == 'section':
                 remove_value = command.split(' ')[2]
-                main.delete_section(project_opened, remove_value)
+                datatree.delete_section(project_opened, remove_value)
         elif command == "list":
-            sections = main.list_sections(project_opened)
+            sections = datatree.list_sections(project_opened)
             print(f"Sections: {sections}")
         else:
             print(f"You entered: {command}")
