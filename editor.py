@@ -1,8 +1,9 @@
-import pygame as pg
-import datatree as dt
 import os
 
-from UI.UIobject import UIobject, link
+import pygame as pg
+import datatree as dt
+
+from UI.UIobject import UiObject, link
 
 class Editor():
     def __init__(self):

@@ -15,3 +15,21 @@ class Group:
         """
 
         return Group([obj for obj in self.objects if condition_func(obj)])
+
+    def add(self, obj: UIobject):
+        """adds an object to the group
+        
+        Args:
+            obj (UIobject): the object to add
+        """
+
+        self.objects.append(obj)
+
+    def remove(self, obj: UIobject):
+        """removes an object from the group
+        
+        Args:
+            obj (UIobject): the object to remove
+        """
+
+        self.objects.remove(obj)
