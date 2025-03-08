@@ -1,9 +1,13 @@
-import os
+"""Application entry point for the Data Tree Editor."""
 
+import os
 import pygame as pg
 import datatree as dt
+from UI.ui_tree import Tree, Node
+from UI.ui_object import UiObject, Builder
+from UI.vector import Vector as vec
+from UI.link import LinkAttribute, LinkByMethod
 
-from UI.UIobject import UiObject, link
 
 class Editor():
     def __init__(self):
@@ -16,10 +20,16 @@ class Editor():
         self.e["current_section"] = "1"
         self.e["project_path"] = None
         self.e["project_name"] = ""
-        self.e["background_color"] = (30, 30, 30)
+
+        self.screen_width = 800
+        self.screen_height = 600
+        self.screen_size = vec(self.screen_width, self.screen_height)
+
+        self.ui_tree = Tree()
+        self.setup_ui_tree()
 
 
-        self.screen = pg.display.set_mode((800, 600), pg.RESIZABLE|pg.DOUBLEBUF|pg.HWSURFACE)
+        self.screen = pg.display.set_mode(self.screen_size.to_tuple(), pg.RESIZABLE|pg.DOUBLEBUF)
         self.clock = pg.time.Clock()
         self.running = True
 
@@ -37,12 +47,17 @@ class Editor():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.running = False
+            if event.type == pg.VIDEORESIZE:
+                self.screen_width = event.w
+                self.screen_height = event.h
+                self.screen_size = vec(self.screen_width, self.screen_height)
+                pg.display.set_mode((event.w, event.h), pg.RESIZABLE| pg.DOUBLEBUF)
 
     def _update(self):
         pass
 
     def _draw(self):
-        self.screen.fill(self.e["background_color"])
+        self.ui_tree.draw(self.screen)
         pg.display.flip()
 
     def _open_project(self, project_path):
@@ -57,6 +72,23 @@ class Editor():
 
     def _set_title(self, title):
         pg.display.set_caption(title)
+
+    def setup_ui_tree(self):
+        main_window_builder = Builder()
+        main_window_builder["background_color"] = (50, 50, 50)
+        main_window = UiObject(vec(0, 0), LinkAttribute(self, "screen_size"), main_window_builder)
+        main_window_node = Node(main_window)
+        self.ui_tree.set_root(main_window_node)
+
+        toolbar_builder = Builder()
+        toolbar_builder["background_color"] = (30, 30, 30)
+        toolbar_builder["border_width"] = 1
+        toolbar_builder["border_color"] = (255, 255, 255)
+        toolbar_builder["border_radius"] = 25
+        toolbar = UiObject(vec(0, 0), LinkByMethod(self, lambda x : vec(x.screen_width, 50)), toolbar_builder)
+        toolbar_node = Node(toolbar)
+        self.ui_tree.add_node(toolbar_node, main_window_node)
+
 
 if __name__ == "__main__":
     editor = Editor()
