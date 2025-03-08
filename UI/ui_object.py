@@ -1,13 +1,25 @@
 import pygame as pg
 from vector import Vector as vec
 
+class Builder:
+    def __init__(self):
+        self.params = {
+            "pos_type": "relative",
+            "background_color": None,
+            "border_color": None,
+            "border_width": 0,
+            "border_radius": 0
+        }
+
+    def __setattr__(self, name, value):
+        self.params[name] = value
+
+
 class UiObject:
-    def __init__(self, pos: vec, size: vec, *args, pos_type="relative", **kwargs):
+    def __init__(self, pos: vec, size: vec, builder: Builder):
         self.pos = pos
         self.size = size
-        self.args = args
-        self.pos_type = pos_type
-        for key, value in kwargs.items():
+        for key, value in builder.items():
             setattr(self, key, value)
 
     def draw(self, screen: pg.Surface, position: vec):
