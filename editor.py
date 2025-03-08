@@ -84,7 +84,7 @@ class Editor():
         toolbar_builder["background_color"] = (30, 30, 30)
         toolbar_builder["border_width"] = 1
         toolbar_builder["border_color"] = (255, 255, 255)
-        toolbar_builder["border_radius"] = 25
+        toolbar_builder["border_radius"] = [0, 0, 10, 10]
         toolbar = UiObject(vec(0, 0), LinkByMethod(self, lambda x : vec(x.screen_width, 50)), toolbar_builder)
         toolbar_node = Node(toolbar)
         self.ui_tree.add_node(toolbar_node, main_window_node)

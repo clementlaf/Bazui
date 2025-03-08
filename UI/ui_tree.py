@@ -124,6 +124,24 @@ class Tree:
             else:
                 raise ValueError("Invalid position type")
 
+    def get_position_from_parent(self, node: Node, parent_pos: vec)-> vec:
+        """Return the position of the node from the parent
+
+        Args:
+            node (Node): The node to get the position
+            parent_pos (vec): The position of the parent
+        
+        Returns:
+            vec: The position of the node
+        """
+
+        if node.object.pos_type == "relative":
+            return parent_pos + node.object.pos
+        elif node.object.pos_type == "absolute":
+            return node.object.pos
+        else:
+            raise ValueError("Invalid position type")
+
     def draw(self, screen: pg.Surface):
         """Draw the tree on the screen
 
@@ -133,12 +151,13 @@ class Tree:
 
         if not self.initialized:
             raise ValueError("The tree is not initialized")
-        self._draw_node(screen, self.root)
+        self._draw_node(screen, self.root, vec(0, 0))
 
-    def _draw_node(self, screen: pg.Surface, node: Node):
+    def _draw_node(self, screen: pg.Surface, node: Node, parent_pos: vec):
         """Draw the node on the screen"
         """
 
-        node.object.draw(screen, self.get_position_of(node))
+        node_pos = self.get_position_from_parent(node, parent_pos)
+        node.object.draw(screen, node_pos)
         for child in node.childs:
-            self._draw_node(screen, child)
+            self._draw_node(screen, child, node_pos)

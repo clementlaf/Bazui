@@ -47,9 +47,9 @@ class UiObject:
         """
 
         if self.background_color is not None:
-            pg.draw.rect(screen, self.background_color, pg.Rect(get(position).to_tuple(), get(self.size).to_tuple()), 0, self.border_radius)
+            self.draw_rect(screen, self.background_color, pg.Rect(get(position).to_tuple(), get(self.size).to_tuple()), 0, self.border_radius)
         if self.border_width != 0 and self.border_color is not None:
-            pg.draw.rect(screen, self.border_color, pg.Rect(get(position).to_tuple(), get(self.size).to_tuple()), self.border_width, self.border_radius)
+            self.draw_rect(screen, self.border_color, pg.Rect(get(position).to_tuple(), get(self.size).to_tuple()), self.border_width, self.border_radius)
 
     def is_under_point(self, position: vec, point: vec)-> bool:
         """Check if the point is under the object
@@ -90,3 +90,23 @@ class UiObject:
         """
 
         return pg.Rect(get(position).to_tuple(), get(self.size).to_tuple()).clip(rect)
+
+    def draw_rect(self, surface, color, rect, width=0, border_radius=0):
+        """Draw a rectangle with rounded corners
+
+        Args:
+            surface (pg.Surface): The surface to draw the rectangle
+            color (tuple): The color of the rectangle
+            rect (pg.Rect): The rectangle to draw
+            width (int): The width of the border
+            border_radius (int): The radius of the border
+        """
+
+        if isinstance(border_radius, int):
+            pg.draw.rect(surface, color, rect, width, border_radius)
+        else:
+            pg.draw.rect(surface, color, rect, width,
+                          border_top_left_radius=border_radius[0],
+                            border_top_right_radius=border_radius[1],
+                              border_bottom_left_radius=border_radius[2],
+                                border_bottom_right_radius=border_radius[3])
