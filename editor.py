@@ -7,6 +7,7 @@ from UI.ui_tree import Tree, Node
 from UI.ui_object import UiObject, Builder
 from UI.vector import Vector as vec
 from UI.link import LinkAttribute, LinkByMethod
+from UI.grid import Grid
 
 
 class Editor():
@@ -88,6 +89,25 @@ class Editor():
         toolbar = UiObject(vec(0, 0), LinkByMethod(self, lambda x : vec(x.screen_width, 50)), toolbar_builder)
         toolbar_node = Node(toolbar)
         self.ui_tree.add_node(toolbar_node, main_window_node)
+
+        test_grid_builder = Builder()
+        test_grid_builder["background_color"] = (100, 100, 100)
+        test_grid = Grid(vec(0, 50), vec(200, 200), test_grid_builder, 3, 3, "fixed")
+        test_grid_node = Node(test_grid)
+        self.ui_tree.add_node(test_grid_node, main_window_node)
+
+        child_builders = [Builder() for _ in range(9)]
+        for i, builder in enumerate(child_builders):
+            col = i/(len(child_builders))*255
+            builder["background_color"] = (col, col, col)
+        for i in range(9):
+            position = LinkByMethod(test_grid,
+                                     lambda x, i=i: x.cell_poses[(i%3, i//3)])
+            size = LinkByMethod(test_grid,
+                                 lambda x, i=i : vec(x.col_sizes[i%3]*x.size.x, x.row_sizes[i//3]*x.size.y))
+            child = UiObject(position, size, child_builders[i])
+            child_node = Node(child)
+            self.ui_tree.add_node(child_node, test_grid_node)
 
 
 if __name__ == "__main__":
