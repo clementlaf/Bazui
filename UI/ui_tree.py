@@ -5,6 +5,7 @@ import pygame as pg
 
 from UI.ui_object import UiObject
 from UI.vector import Vector as vec
+from UI.link import get
 
 class Node:
     """Node class to manage the nodes of the tree
@@ -118,7 +119,7 @@ class Tree:
             return node.object.pos
         else:
             if node.object.pos_type == "relative":
-                return node.parent.object.pos + node.object.pos
+                return get(node.parent.object.pos) + get(node.object.pos)
             elif node.object.pos_type == "absolute":
                 return node.object.pos
             else:
@@ -136,7 +137,7 @@ class Tree:
         """
 
         if node.object.pos_type == "relative":
-            return parent_pos + node.object.pos
+            return get(parent_pos) + get(node.object.pos)
         elif node.object.pos_type == "absolute":
             return node.object.pos
         else:
