@@ -110,3 +110,7 @@ class UiObject:
                             border_top_right_radius=border_radius[1],
                               border_bottom_left_radius=border_radius[2],
                                 border_bottom_right_radius=border_radius[3])
+
+    def update(self):
+        """Update the object"""
+        pass
