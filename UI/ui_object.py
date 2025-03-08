@@ -2,10 +2,11 @@ import pygame as pg
 from vector import Vector as vec
 
 class UiObject:
-    def __init__(self, pos: vec, size: vec, *args, **kwargs):
+    def __init__(self, pos: vec, size: vec, *args, pos_type="relative", **kwargs):
         self.pos = pos
         self.size = size
         self.args = args
+        self.pos_type = pos_type
         for key, value in kwargs.items():
             setattr(self, key, value)
 
