@@ -3,8 +3,8 @@
 
 import pygame as pg
 
-from ui_object import UiObject
-from vector import Vector as vec
+from UI.ui_object import UiObject
+from UI.vector import Vector as vec
 
 class Node:
     """Node class to manage the nodes of the tree
