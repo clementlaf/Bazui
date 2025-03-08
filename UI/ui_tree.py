@@ -68,8 +68,19 @@ class Tree:
     """Tree class to manage the nodes of the tree
     """
 
-    def __init__(self, root):
+    def __init__(self):
+        self.root = None
+        self.initialized = False # indicates if the tree can be used (root is set)
+
+    def set_root(self, root: Node):
+        """Set the root of the tree
+
+        Args:
+            root (Node): The root of the tree
+        """
+
         self.root = root
+        self.initialized = True
 
     def add_node(self, node: Node, parent: Node):
         """Add a node to the tree
@@ -120,6 +131,8 @@ class Tree:
             screen (pg.Surface): The screen to draw the tree
         """
 
+        if not self.initialized:
+            raise ValueError("The tree is not initialized")
         self._draw_node(screen, self.root)
 
     def _draw_node(self, screen: pg.Surface, node: Node):
