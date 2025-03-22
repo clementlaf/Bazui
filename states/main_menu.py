@@ -3,38 +3,34 @@ from states.base_state import BaseState
 from states.event_helpers import consume_event
 from ui.widget import Widget
 from ui.grid import Grid
+from ui.text import SingleLineText
 from ui.link import LinkAttribute, LinkByMethod
 
 class MainMenu(BaseState):
     def __init__(self, app):
         super().__init__(app)
-        self.font = pygame.font.Font(None, 50)
+        self.font = pygame.font.Font(self.app_state.text_font, 50)
 
-        self.ui_context.add_widget(Widget((100, 400), (200, 50), on_click=self.app.quit, background_color=(255, 0, 0)))
-        test_grid = self.ui_context.add_widget(Grid((100, 0), (200, 200), (2, 2),
+        self.ui_context.add_widget(Widget((100, 400), (200, 50), "1", on_click=self.app.quit, background_color=(255, 0, 0)))
+        test_grid = self.ui_context.add_widget(Grid((100, 0), (200, 200), "test_grid", (2, 2),
                                                      background_color=(0, 255, 0),
                                                      on_click=self.app.quit,
                                                      padding=10,
                                                      margin=20,
                                                      has_surface=True))
         cell_size_link = LinkAttribute(self.ui_context.get(test_grid), "cell_size")
-        self.ui_context.get(test_grid).set_child((0, 0), Widget(None, cell_size_link))
-        self.ui_context.get(test_grid).set_child((1, 0), Widget(None, cell_size_link, background_color=(0, 0, 255), on_click=consume_event))
-        self.ui_context.get(test_grid).set_child((0, 1), Widget(None, cell_size_link, background_color=(255, 0, 255), on_click=lambda: print("Clicked")))
-        self.ui_context.get(test_grid).set_child((1, 1), Widget(None, cell_size_link, background_color=(255, 255, 0)))
+        self.ui_context.get(test_grid).set_child((0, 0), Widget(None, cell_size_link, "0"))
+        self.ui_context.get(test_grid).set_child((1, 0), Widget(None, cell_size_link, "1", background_color=(0, 0, 255), on_click=consume_event))
+        self.ui_context.get(test_grid).set_child((0, 1), Widget(None, cell_size_link, "2", background_color=(255, 0, 255), on_click=lambda widget: print("Clicked")))
+        self.ui_context.get(test_grid).set_child((1, 1), Widget(None, cell_size_link, "3", background_color=(255, 255, 0), can_be_selected=True))
 
         bottom_bar_pos_link = LinkByMethod(self.app_state, lambda x: (0, x.screen_size[1] - 50))
         bottom_bar_size_link = LinkByMethod(self.app_state, lambda x: (x.screen_size[0], 50))
-        self.ui_context.add_widget(Widget(bottom_bar_pos_link, bottom_bar_size_link, background_color=(0, 255, 255), on_click=self.to_tree_editor))
+        bottom_bar = self.ui_context.add_widget(Widget(bottom_bar_pos_link, bottom_bar_size_link, "bottom_bar", background_color=(0, 255, 255), on_click=self.to_tree_editor))
+        
+        text_pos_link = LinkAttribute(self.ui_context.get(bottom_bar), "pos")
+        self.ui_context.get(bottom_bar).set_child(SingleLineText(text_pos_link, (300, 100), "text", text="test", font=self.font, on_click=consume_event, background_color=(255, 0, 255), size_auto_fit=True, can_be_selected=True, editable=True))
 
-    def to_tree_editor(self):
+    def to_tree_editor(self, widget):
         from states.tree_editor import TreeEditor
         self.app.state_manager.change_state(TreeEditor(self.app))
-
-    def to_timeline_editor(self):
-        from states.timeline_editor import TimelineEditor
-        self.app.state_manager.change_state(TimelineEditor(self.app))
-
-    def to_character_sheets(self):
-        from states.character_sheet import CharacterSheet
-        self.app.state_manager.change_state(CharacterSheet(self.app))
