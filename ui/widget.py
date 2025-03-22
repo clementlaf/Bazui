@@ -13,8 +13,8 @@ class Widget:
         self.on_click = None
         self.on_hover = None
         self.childs = []
-        self.minx_size = None
-        self.miny_size = None
+        self.info_tip = None
+        self.background_color = None
 
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -38,17 +38,21 @@ class Widget:
             if self.rect.collidepoint(event.pos):
                 if self.on_click:
                     self.on_click()
-                    return True
+                    return True  # Stop event propagation
         if event.type == pygame.MOUSEMOTION:
             if self.rect.collidepoint(event.pos):
                 self.hover = True
                 if self.on_hover:
                     self.on_hover()
-                    return True
+                    return True  # Stop event propagation
             else:
                 self.hover = False
 
         return False
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (100, 100, 100), self.rect)
+        if self.background_color:
+            pygame.draw.rect(screen, self.background_color, self.rect)
+        for child in self.childs:
+            if child:
+                child.draw(screen)
