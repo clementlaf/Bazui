@@ -2,7 +2,7 @@ from ui.widget import Widget
 from ui.link import get, LinkByMethod, LinkAttribute
 
 class Grid(Widget):
-    def __init__(self, pos, size, grid_shape, **kwargs):
+    def __init__(self, pos, size, name, grid_shape, **kwargs):
         self.grid_shape = grid_shape
         self.grid_poses = {}
 
@@ -11,7 +11,7 @@ class Grid(Widget):
         self.margin = 0   # margin between grid and widget border
         self.grid_type = "fixed_regular"
 
-        super().__init__(pos, size, **kwargs)
+        super().__init__(pos, size, name, **kwargs)
 
         self.childs = [None for _ in range(grid_shape[0] * grid_shape[1])]
         self.arrange()
