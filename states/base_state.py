@@ -16,4 +16,5 @@ class BaseState:
         pass
 
     def draw(self, screen):
+        screen.fill(self.app_state.background_color)
         self.ui_context.draw(screen)
