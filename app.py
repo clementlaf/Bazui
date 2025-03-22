@@ -6,15 +6,16 @@ from ui.ui_context import UIContext
 class App:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((800, 600))
+        self.app_state = AppState()  # Global state
+        self.screen = pygame.display.set_mode(self.app_state.screen_size, pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
         self.running = True
-        self.app_state = AppState()  # Global state
         self.ui_context = UIContext(self.app_state)  # UI manager
         self.state_manager = StateManager(self)
 
     def run(self):
         while self.running:
+            self.update()
             self.state_manager.handle_events()
             self.state_manager.update()
             self.state_manager.draw(self.screen)
@@ -24,3 +25,6 @@ class App:
 
     def quit(self):
         self.running = False
+
+    def update(self):
+        self.app_state.screen_size = self.screen.get_size()
