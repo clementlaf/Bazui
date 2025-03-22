@@ -1,16 +1,34 @@
 import pygame
 from states.base_state import BaseState
-from ui.button import Button
+from states.event_helpers import consume_event
+from ui.widget import Widget
+from ui.grid import Grid
+from ui.link import LinkAttribute, LinkByMethod
+
+import math
+import time
 
 class MainMenu(BaseState):
     def __init__(self, app):
         super().__init__(app)
         self.font = pygame.font.Font(None, 50)
 
-        self.ui_context.add_widget(Button("Edit Tree", (100, 100), (200, 50), self.to_tree_editor))
-        self.ui_context.add_widget(Button("Edit Timeline", (100, 200), (200, 50), self.to_timeline_editor))
-        self.ui_context.add_widget(Button("Character Sheets", (100, 300), (200, 50), self.to_character_sheets))
-        self.ui_context.add_widget(Button("Quit", (100, 400), (200, 50), self.app.quit))
+        # self.ui_context.add_widget(Button("Edit Tree", (100, 100), (200, 50), self.to_tree_editor))
+        # self.ui_context.add_widget(Button("Edit Timeline", (100, 200), (200, 50), self.to_timeline_editor))
+        # self.ui_context.add_widget(Button("Character Sheets", (100, 300), (200, 50), self.to_character_sheets))
+        self.ui_context.add_widget(Widget((100, 400), (200, 50), on_click=self.app.quit, background_color=(255, 0, 0)))
+        test_grid = self.ui_context.add_widget(Grid((100, 0), (200, 200), (2, 2),
+                                                     background_color=(0, 255, 0),
+                                                     on_click=self.app.quit,
+                                                     padding=10,
+                                                     margin=20,
+                                                     has_surface=True))
+        cell_size_link = LinkAttribute(self.ui_context.get(test_grid), "cell_size")
+        self.ui_context.get(test_grid).set_child((0, 0), Widget(None, cell_size_link))
+        self.ui_context.get(test_grid).set_child((1, 0), Widget(None, cell_size_link, background_color=(0, 0, 255), on_click=consume_event))
+        self.ui_context.get(test_grid).set_child((0, 1), Widget(None, cell_size_link, background_color=(255, 0, 255), on_click=lambda: print("Clicked")))
+        self.ui_context.get(test_grid).set_child((1, 1), Widget(None, cell_size_link, background_color=(255, 255, 0)))
+
 
     def to_tree_editor(self):
         from states.tree_editor import TreeEditor
