@@ -1,3 +1,3 @@
 
-def consume_event():
+def consume_event(widget):
     return True
