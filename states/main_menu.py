@@ -5,9 +5,6 @@ from ui.widget import Widget
 from ui.grid import Grid
 from ui.link import LinkAttribute, LinkByMethod
 
-import math
-import time
-
 class MainMenu(BaseState):
     def __init__(self, app):
         super().__init__(app)
@@ -28,7 +25,7 @@ class MainMenu(BaseState):
 
         bottom_bar_pos_link = LinkByMethod(self.app_state, lambda x: (0, x.screen_size[1] - 50))
         bottom_bar_size_link = LinkByMethod(self.app_state, lambda x: (x.screen_size[0], 50))
-        self.ui_context.add_widget(Widget(bottom_bar_pos_link, bottom_bar_size_link, background_color=(0, 255, 255), on_click=self.app.quit))
+        self.ui_context.add_widget(Widget(bottom_bar_pos_link, bottom_bar_size_link, background_color=(0, 255, 255), on_click=self.to_tree_editor))
 
     def to_tree_editor(self):
         from states.tree_editor import TreeEditor
