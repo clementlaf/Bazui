@@ -10,11 +10,11 @@ class BaseState:
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.app.quit()
+                self.app.quit(None)
             self.ui_context.handle_events(event)
 
     def update(self):
-        pass
+        self.ui_context.update()
 
     def draw(self, screen):
         screen.fill(self.app_state.background_color)
