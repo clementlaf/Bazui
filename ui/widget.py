@@ -28,10 +28,11 @@ class Widget:
 
     def handle_event(self, event):
 
-        for child in self.childs:
-            if self.rect.collidepoint(event.pos): # If event is inside widget
-                if child.handle_event(event):
-                    return True
+        if hasattr(event, "pos"):
+            for child in self.childs:
+                if child and self.rect.collidepoint(event.pos): # If event is inside widget
+                    if child.handle_event(event):
+                        return True
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
