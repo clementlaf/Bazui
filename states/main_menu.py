@@ -13,9 +13,6 @@ class MainMenu(BaseState):
         super().__init__(app)
         self.font = pygame.font.Font(None, 50)
 
-        # self.ui_context.add_widget(Button("Edit Tree", (100, 100), (200, 50), self.to_tree_editor))
-        # self.ui_context.add_widget(Button("Edit Timeline", (100, 200), (200, 50), self.to_timeline_editor))
-        # self.ui_context.add_widget(Button("Character Sheets", (100, 300), (200, 50), self.to_character_sheets))
         self.ui_context.add_widget(Widget((100, 400), (200, 50), on_click=self.app.quit, background_color=(255, 0, 0)))
         test_grid = self.ui_context.add_widget(Grid((100, 0), (200, 200), (2, 2),
                                                      background_color=(0, 255, 0),
@@ -29,6 +26,9 @@ class MainMenu(BaseState):
         self.ui_context.get(test_grid).set_child((0, 1), Widget(None, cell_size_link, background_color=(255, 0, 255), on_click=lambda: print("Clicked")))
         self.ui_context.get(test_grid).set_child((1, 1), Widget(None, cell_size_link, background_color=(255, 255, 0)))
 
+        bottom_bar_pos_link = LinkByMethod(self.app_state, lambda x: (0, x.screen_size[1] - 50))
+        bottom_bar_size_link = LinkByMethod(self.app_state, lambda x: (x.screen_size[0], 50))
+        self.ui_context.add_widget(Widget(bottom_bar_pos_link, bottom_bar_size_link, background_color=(0, 255, 255), on_click=self.app.quit))
 
     def to_tree_editor(self):
         from states.tree_editor import TreeEditor
