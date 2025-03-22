@@ -16,9 +16,18 @@ class UIContext:
         for widget in self.widgets.values():
             widget.handle_event(event)
 
+    def update(self):
+        for widget in self.widgets.values():
+            widget.update()
+
     def draw(self, screen):
         for widget in self.widgets.values():
             widget.draw(screen)
 
     def get(self, widget_id):
         return self.widgets.get(widget_id)
+    def __getitem__(self, widget_name):
+        for widget in self.widgets.values():
+            if widget.name == widget_name:
+                return widget
+        return None
