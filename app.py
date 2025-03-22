@@ -21,7 +21,7 @@ class App:
             fps = self.clock.tick(60)
             pygame.display.set_caption(f"FPS: {1/fps*1000:.2f}")
 
-    def quit(self):
+    def quit(self, widget):
         self.running = False
 
     def update(self):
