@@ -9,7 +9,7 @@ class LinkAttribute(Link):
         self.attr = attr
 
     def get(self):
-        return getattr(self.ref, self.attr)
+        return get(getattr(self.ref, self.attr))
 
 class LinkByMethod(Link):
     def __init__(self, ref, method):
@@ -17,7 +17,7 @@ class LinkByMethod(Link):
         self.method = method
 
     def get(self):
-        return self.method(self.ref)
+        return get(self.method(self.ref))
 
 
 
