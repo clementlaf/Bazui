@@ -19,7 +19,8 @@ class App:
             self.state_manager.update()
             self.state_manager.draw(self.screen)
             pygame.display.flip()
-            self.clock.tick(60)
+            fps = self.clock.tick(60)
+            pygame.display.set_caption(f"FPS: {1/fps*1000:.2f}")
 
     def quit(self):
         self.running = False
