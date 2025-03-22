@@ -15,6 +15,8 @@ class Widget:
         self.childs = []
         self.info_tip = None
         self.background_color = None
+        self.has_surface = False
+        self.surface = None
 
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -22,12 +24,13 @@ class Widget:
             else:
                 raise AttributeError(f"Widget has no attribute {key}")
 
+        self._setup()
+
     @property
     def rect(self):
         return pygame.Rect(get(self.pos), get(self.size))
 
     def handle_event(self, event):
-
         if hasattr(event, "pos"):
             for child in self.childs:
                 if child and self.rect.collidepoint(event.pos): # If event is inside widget
@@ -50,9 +53,37 @@ class Widget:
 
         return False
 
-    def draw(self, screen):
-        if self.background_color:
-            pygame.draw.rect(screen, self.background_color, self.rect)
-        for child in self.childs:
-            if child:
-                child.draw(screen)
+    def draw(self, screen, origin=(0, 0)):
+        if self.has_surface: # childs draw position is relative to widget position
+            if self.surface.size != get(self.size):
+                self.surface = pygame.Surface(get(self.size))
+
+            # Draw widget surface
+            if self.background_color:
+                self.surface.fill(self.background_color)
+            for child in self.childs:
+                if child:
+                    child.draw(self.surface, origin=get(self.pos))
+            blit_pos = (get(self.pos)[0] - origin[0], get(self.pos)[1] - origin[1])
+            screen.blit(self.surface, blit_pos)
+        else: # childs draw position is absolute
+            if self.background_color:
+                pygame.draw.rect(screen, self.background_color, self.rect.move(-origin[0], -origin[1]))
+            for child in self.childs:
+                if child:
+                    child.draw(screen, origin)
+
+    def _setup(self):
+        """ widget initialisation checks and setup """
+
+        if self.on_click and not callable(self.on_click):
+            raise AttributeError("on_click must be callable")
+        if self.on_hover and not callable(self.on_hover):
+            raise AttributeError("on_hover must be callable")
+        if self.info_tip and not isinstance(self.info_tip, str):
+            raise AttributeError("info_tip must be a string")
+
+        if self.has_surface:
+            self.surface = pygame.Surface(get(self.size))
+            self.surface.fill((255, 255, 255))
+            self.has_surface = True
