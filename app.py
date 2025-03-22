@@ -1,7 +1,6 @@
 import pygame
 from state_manager import StateManager
 from app_state import AppState
-from ui.ui_context import UIContext
 
 class App:
     def __init__(self):
@@ -10,7 +9,6 @@ class App:
         self.screen = pygame.display.set_mode(self.app_state.screen_size, pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
         self.running = True
-        self.ui_context = UIContext(self.app_state)  # UI manager
         self.state_manager = StateManager(self)
 
     def run(self):
