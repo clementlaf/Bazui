@@ -33,7 +33,8 @@ class SingleLineText(Widget):
         self.text_render = None
         self.undo_stack = []
         self.redo_stack = []
-        self.selection_start = None  # selection end is always cursor_pos
+        self.selection_start = None
+        self.selection_end = None
 
 
         # initialize attributes
@@ -58,7 +59,6 @@ class SingleLineText(Widget):
 
         if event.type == pygame.MOUSEBUTTONDOWN and self.selected:
             self.cursor_pos = self.mouse_to_cursor(event.pos)
-            self.build_text_render()
             return 1
 
         if event.type == pygame.KEYUP:
@@ -68,11 +68,44 @@ class SingleLineText(Widget):
                 self.repeatable_last_activated = 0
 
         if event.type == pygame.KEYDOWN and self.selected and self.editable:
-            if pygame.key.get_mods() & pygame.KMOD_CTRL:
+            if (pygame.key.get_mods() & pygame.KMOD_SHIFT) and (pygame.key.get_mods() & pygame.KMOD_CTRL):
+                if event.key == pygame.K_LEFT:
+                    if self.selection_start is None:
+                        self.selection_start = self.cursor_pos
+                    self.cursor_pos = self.crtl_get_prec()
+                    self.selection_end = self.cursor_pos
+                    self.set_repeatable(event)
+                if event.key == pygame.K_RIGHT:
+                    if self.selection_start is None:
+                        self.selection_start = self.cursor_pos
+                    self.cursor_pos = self.ctrl_get_next()
+                    self.selection_end = self.cursor_pos
+                    self.set_repeatable(event)
+            elif pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                if event.key == pygame.K_LEFT:
+                    if self.selection_start is None:
+                        self.selection_start = self.cursor_pos
+                    self.cursor_pos -= 1
+                    self.bound_cursor()
+                    self.selection_end = self.cursor_pos
+                    self.set_repeatable(event)
+                if event.key == pygame.K_RIGHT:
+                    if self.selection_start is None:
+                        self.selection_start = self.cursor_pos
+                    self.cursor_pos += 1
+                    self.bound_cursor()
+                    self.selection_end = self.cursor_pos
+                    self.set_repeatable(event)
+            elif pygame.key.get_mods() & pygame.KMOD_CTRL:
                 if event.key == pygame.K_z:
                     self.undo()
                 if event.key == pygame.K_y:
                     self.redo()
+                if event.key == pygame.K_a:
+                    self.selection_start = 0
+                    self.selection_end = len(self.text)
+                    self.cursor_pos = len(self.text)
+                    self.set_repeatable(event)
                 if event.key == pygame.K_LEFT:
                     self.cursor_pos = self.crtl_get_prec()
                     self.set_repeatable(event)
@@ -92,10 +125,12 @@ class SingleLineText(Widget):
             else:
                 if event.key == pygame.K_BACKSPACE:
                     self.delete()
+                    self.reset_selection()
                     self.set_repeatable(event)
                     return 1
                 elif event.key == pygame.K_DELETE:
                     self.suppress()
+                    self.reset_selection()
                     self.set_repeatable(event)
                     return 1
                 elif event.key == pygame.K_RETURN:
@@ -103,27 +138,40 @@ class SingleLineText(Widget):
                 elif event.key == pygame.K_LEFT and self.has_cursor:
                     self.cursor_pos -= 1
                     self.bound_cursor()
+                    self.reset_selection()
                     self.set_repeatable(event)
                     return 1
                 elif event.key == pygame.K_RIGHT and self.has_cursor:
                     self.cursor_pos += 1
                     self.bound_cursor()
+                    self.reset_selection()
                     self.set_repeatable(event)
                     return 1
                 if event.unicode not in ['¨', '^']:
                     self.write(event.unicode)
+                    self.reset_selection()
                     self.set_repeatable(event)
                     return 1
-
 
         return return_code
 
     def write(self, text_input):
+        if self.selection_start is not None:
+            start = min(self.selection_start, self.selection_end)
+            end = max(self.selection_start, self.selection_end)
+            self.delete_group(start, end)
+            self.reset_selection()
         text = self.text[:self.cursor_pos] + text_input + self.text[self.cursor_pos:]
         self.cursor_pos += len(text_input)
         self.set_text(text)
 
     def delete(self):
+        if self.selection_start is not None:
+            start = min(self.selection_start, self.selection_end)
+            end = max(self.selection_start, self.selection_end)
+            self.delete_group(start, end)
+            self.reset_selection()
+            return
         if self.cursor_pos == 0:
             return
         text = self.text[:self.cursor_pos - 1] + self.text[self.cursor_pos:]
@@ -131,6 +179,12 @@ class SingleLineText(Widget):
         self.set_text(text)
 
     def suppress(self):
+        if self.selection_start is not None:
+            start = min(self.selection_start, self.selection_end)
+            end = max(self.selection_start, self.selection_end)
+            self.delete_group(start, end)
+            self.reset_selection()
+            return
         if self.cursor_pos == len(self.text):
             return
         text = self.text[:self.cursor_pos] + self.text[self.cursor_pos + 1:]
@@ -149,7 +203,8 @@ class SingleLineText(Widget):
             self.repeatable_first_activated = time.time()
             self.repeatable_last_activated = time.time()
 
-            self.save_state_to_stack()
+            if event is not None:
+                self.save_state_to_stack()
 
     def update(self):
         if self.repeatable_event:
@@ -162,6 +217,12 @@ class SingleLineText(Widget):
         # clear surface
         if self.background_color:
             self.surface.fill(self._background_color)
+        # render selection
+        if self.selection_start is not None:
+            sel_min = min(self.selection_start, self.selection_end)
+            sel_max = max(self.selection_start, self.selection_end)
+            sel_rect = pygame.Rect(self.font.size(self.text[:sel_min])[0], 0, self.font.size(self.text[sel_min:sel_max])[0], self.size[1])
+            pygame.draw.rect(self.surface, [min(int(el*1.5), 255) for el in self.cursor_color], sel_rect)
         # render cursor
         if self.selected:
             pygame.draw.rect(self.surface, self.cursor_color, (self.font.size(self.text[:self.cursor_pos])[0], 0, self.font.get_height()//2, self.size[1]))
@@ -171,15 +232,15 @@ class SingleLineText(Widget):
         return self.surface
 
     def save_state_to_stack(self):
-        self.undo_stack.append((self.text, self.cursor_pos))
+        self.undo_stack.append((self.text, self.cursor_pos, self.selection_start, self.selection_end))
 
         if len(self.undo_stack) > self.undo_stack_max_size:
             self.undo_stack.pop(0)
 
     def undo(self):
         if self.undo_stack:
-            self.redo_stack.append((self.text, self.cursor_pos))
-            new_text, self.cursor_pos = self.undo_stack.pop()
+            self.redo_stack.append((self.text, self.cursor_pos, self.selection_start, self.selection_end))
+            new_text, self.cursor_pos, self.selection_start, self.selection_end = self.undo_stack.pop()
             self.set_text(new_text)
 
             if len(self.redo_stack) > self.redo_stack_max_size:
@@ -189,8 +250,8 @@ class SingleLineText(Widget):
 
     def redo(self):
         if self.redo_stack:
-            self.undo_stack.append((self.text, self.cursor_pos))
-            new_text, self.cursor_pos = self.redo_stack.pop()
+            self.undo_stack.append((self.text, self.cursor_pos, self.selection_start, self.selection_end))
+            new_text, self.cursor_pos, self.selection_start, self.selection_end = self.redo_stack.pop()
             self.set_text(new_text)
 
             if len(self.undo_stack) > self.undo_stack_max_size:
@@ -244,3 +305,7 @@ class SingleLineText(Widget):
         text = self.text[:start] + self.text[end:]
         self.cursor_pos = start
         self.set_text(text)
+
+    def reset_selection(self):
+        self.selection_start = None
+        self.selection_end = None
