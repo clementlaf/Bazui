@@ -57,101 +57,108 @@ class SingleLineText(Widget):
     def handle_event(self, event, is_under_parent=True):
         return_code = super().handle_event(event, is_under_parent)
 
-        if event.type == pygame.MOUSEBUTTONDOWN and self.selected:
-            self.cursor_pos = self.mouse_to_cursor(event.pos)
-            return 1
+        if self.editable:
+            if event.type == pygame.MOUSEBUTTONDOWN and self.selected:
+                self.cursor_pos = self.mouse_to_cursor(event.pos)
+                self.reset_selection()
+                return 1
 
-        if event.type == pygame.KEYUP:
-            if self.repeatable_event and self.repeatable_event.key == event.key:
-                self.repeatable_event = None
-                self.repeatable_first_activated = 0
-                self.repeatable_last_activated = 0
+            if event.type == pygame.KEYUP:
+                if self.repeatable_event and self.repeatable_event.key == event.key:
+                    self.repeatable_event = None
+                    self.repeatable_first_activated = 0
+                    self.repeatable_last_activated = 0
 
-        if event.type == pygame.KEYDOWN and self.selected and self.editable:
-            if (pygame.key.get_mods() & pygame.KMOD_SHIFT) and (pygame.key.get_mods() & pygame.KMOD_CTRL):
-                if event.key == pygame.K_LEFT:
-                    if self.selection_start is None:
-                        self.selection_start = self.cursor_pos
-                    self.cursor_pos = self.crtl_get_prec()
-                    self.selection_end = self.cursor_pos
-                    self.set_repeatable(event)
-                if event.key == pygame.K_RIGHT:
-                    if self.selection_start is None:
-                        self.selection_start = self.cursor_pos
-                    self.cursor_pos = self.ctrl_get_next()
-                    self.selection_end = self.cursor_pos
-                    self.set_repeatable(event)
-            elif pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                if event.key == pygame.K_LEFT:
-                    if self.selection_start is None:
-                        self.selection_start = self.cursor_pos
-                    self.cursor_pos -= 1
-                    self.bound_cursor()
-                    self.selection_end = self.cursor_pos
-                    self.set_repeatable(event)
-                if event.key == pygame.K_RIGHT:
-                    if self.selection_start is None:
-                        self.selection_start = self.cursor_pos
-                    self.cursor_pos += 1
-                    self.bound_cursor()
-                    self.selection_end = self.cursor_pos
-                    self.set_repeatable(event)
-            elif pygame.key.get_mods() & pygame.KMOD_CTRL:
-                if event.key == pygame.K_z:
-                    self.undo()
-                if event.key == pygame.K_y:
-                    self.redo()
-                if event.key == pygame.K_a:
-                    self.selection_start = 0
-                    self.selection_end = len(self.text)
-                    self.cursor_pos = len(self.text)
-                    self.set_repeatable(event)
-                if event.key == pygame.K_LEFT:
-                    self.cursor_pos = self.crtl_get_prec()
-                    self.set_repeatable(event)
-                if event.key == pygame.K_RIGHT:
-                    self.cursor_pos = self.ctrl_get_next()
-                    self.set_repeatable(event)
-                if event.key == pygame.K_BACKSPACE:
-                    start = self.crtl_get_prec()
-                    end = self.cursor_pos
-                    self.delete_group(start, end)
-                    self.set_repeatable(event)
-                if event.key == pygame.K_DELETE:
-                    start = self.cursor_pos
-                    end = self.ctrl_get_next()
-                    self.delete_group(start, end)
-                    self.set_repeatable(event)
-            else:
-                if event.key == pygame.K_BACKSPACE:
-                    self.delete()
-                    self.reset_selection()
-                    self.set_repeatable(event)
-                    return 1
-                elif event.key == pygame.K_DELETE:
-                    self.suppress()
-                    self.reset_selection()
-                    self.set_repeatable(event)
-                    return 1
-                elif event.key == pygame.K_RETURN:
-                    return 1
-                elif event.key == pygame.K_LEFT and self.has_cursor:
-                    self.cursor_pos -= 1
-                    self.bound_cursor()
-                    self.reset_selection()
-                    self.set_repeatable(event)
-                    return 1
-                elif event.key == pygame.K_RIGHT and self.has_cursor:
-                    self.cursor_pos += 1
-                    self.bound_cursor()
-                    self.reset_selection()
-                    self.set_repeatable(event)
-                    return 1
-                if event.unicode not in ['¨', '^']:
-                    self.write(event.unicode)
-                    self.reset_selection()
-                    self.set_repeatable(event)
-                    return 1
+            if event.type == pygame.KEYDOWN and self.selected:
+                if (pygame.key.get_mods() & pygame.KMOD_SHIFT) and (pygame.key.get_mods() & pygame.KMOD_CTRL):
+                    if event.key == pygame.K_LEFT: # CTRL + SHIFT + LEFT (select word to the left)
+                        if self.selection_start is None:
+                            self.selection_start = self.cursor_pos
+                        self.cursor_pos = self.crtl_get_prec()
+                        self.selection_end = self.cursor_pos
+                        self.set_repeatable(event)
+                    if event.key == pygame.K_RIGHT: # CTRL + SHIFT + RIGHT (select word to the right)
+                        if self.selection_start is None:
+                            self.selection_start = self.cursor_pos
+                        self.cursor_pos = self.ctrl_get_next()
+                        self.selection_end = self.cursor_pos
+                        self.set_repeatable(event)
+                elif pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    if event.key == pygame.K_LEFT: # SHIFT + LEFT (select to the left)
+                        if self.selection_start is None:
+                            self.selection_start = self.cursor_pos
+                        self.cursor_pos -= 1
+                        self.bound_cursor()
+                        self.selection_end = self.cursor_pos
+                        self.set_repeatable(event)
+                    if event.key == pygame.K_RIGHT: # SHIFT + RIGHT (select to the right)
+                        if self.selection_start is None:
+                            self.selection_start = self.cursor_pos
+                        self.cursor_pos += 1
+                        self.bound_cursor()
+                        self.selection_end = self.cursor_pos
+                        self.set_repeatable(event)
+                    if event.unicode not in ['¨', '^', '']: # SHIFT + ANY (maj + char)
+                        self.write(event.unicode)
+                        self.reset_selection()
+                        self.set_repeatable(event)
+                        return 1
+                elif pygame.key.get_mods() & pygame.KMOD_CTRL:
+                    if event.key == pygame.K_z: # CTRL + Z (undo)
+                        self.undo()
+                    if event.key == pygame.K_y: # CTRL + Y (redo)
+                        self.redo()
+                    if event.key == pygame.K_a: # CTRL + A (select all)
+                        self.selection_start = 0
+                        self.selection_end = len(self.text)
+                        self.cursor_pos = len(self.text)
+                        self.set_repeatable(event)
+                    if event.key == pygame.K_LEFT: # CTRL + LEFT (move cursor to the left by word)
+                        self.cursor_pos = self.crtl_get_prec()
+                        self.set_repeatable(event)
+                    if event.key == pygame.K_RIGHT: # CTRL + RIGHT (move cursor to the right by word)
+                        self.cursor_pos = self.ctrl_get_next()
+                        self.set_repeatable(event)
+                    if event.key == pygame.K_BACKSPACE: # CTRL + BACKSPACE (delete word to the left)
+                        start = self.crtl_get_prec()
+                        end = self.cursor_pos
+                        self.delete_group(start, end)
+                        self.set_repeatable(event)
+                    if event.key == pygame.K_DELETE: # CTRL + DELETE (delete word to the right)
+                        start = self.cursor_pos
+                        end = self.ctrl_get_next()
+                        self.delete_group(start, end)
+                        self.set_repeatable(event)
+                else:
+                    if event.key == pygame.K_BACKSPACE: # BACKSPACE
+                        self.delete()
+                        self.reset_selection()
+                        self.set_repeatable(event)
+                        return 1
+                    elif event.key == pygame.K_DELETE: # DELETE
+                        self.suppress()
+                        self.reset_selection()
+                        self.set_repeatable(event)
+                        return 1
+                    elif event.key == pygame.K_RETURN: # ENTER
+                        return 1
+                    elif event.key == pygame.K_LEFT and self.has_cursor: # LEFT
+                        self.cursor_pos -= 1
+                        self.bound_cursor()
+                        self.reset_selection()
+                        self.set_repeatable(event)
+                        return 1
+                    elif event.key == pygame.K_RIGHT and self.has_cursor: # RIGHT
+                        self.cursor_pos += 1
+                        self.bound_cursor()
+                        self.reset_selection()
+                        self.set_repeatable(event)
+                        return 1
+                    if event.unicode not in ['¨', '^', '']: # ANY (char)
+                        self.write(event.unicode)
+                        self.reset_selection()
+                        self.set_repeatable(event)
+                        return 1
 
         return return_code
 
