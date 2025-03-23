@@ -24,10 +24,17 @@ class UIContext:
         for widget in self.widgets.values():
             widget.draw(screen)
 
-    def get(self, widget_id):
+    def getbyid(self, widget_id):
         return self.widgets.get(widget_id)
+    def getbywidget(self, widget):
+        for widget_id, stored_widget in self.widgets.items():
+            if widget == stored_widget:
+                return widget_id
     def __getitem__(self, widget_name):
         for widget in self.widgets.values():
             if widget.name == widget_name:
                 return widget
         return None
+
+    def remove_widget(self, widget_id):
+        del self.widgets[widget_id]
