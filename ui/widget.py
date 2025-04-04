@@ -22,6 +22,9 @@ class Widget:
         self.has_surface = False
         self.can_be_selected = False
         self.can_be_dragged = False
+        self.contour_color = None
+        self.contour_width = 0
+        self.corner_radius = 0
 
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -93,7 +96,9 @@ class Widget:
             screen.blit(rendered_surface, blit_pos)
         else: # childs draw position is absolute
             if self.background_color:
-                pygame.draw.rect(screen, self.background_color, self.rect.move(-origin[0], -origin[1]))
+                pygame.draw.rect(screen, self.background_color, self.rect.move(-origin[0], -origin[1]), border_radius=self.corner_radius)
+            if self.contour_color:
+                pygame.draw.rect(screen, self.contour_color, self.rect.move(-origin[0], -origin[1]), self.contour_width, border_radius=self.corner_radius)
             for child in self.childs:
                 if child:
                     child.draw(screen, origin)
@@ -107,7 +112,7 @@ class Widget:
             raise AttributeError("on_hover must be callable")
 
         if self.has_surface:
-            self.surface = pygame.Surface(get(self.size))
+            self.surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
 
     def __getitem__(self, widget_name):
         for widget in self.childs:
@@ -163,5 +168,10 @@ class Widget:
             pygame.Surface: The surface of the widget.
         """
         if self.background_color:
-            self.surface.fill(self.background_color)
+            if self.corner_radius > 0:
+                pygame.draw.rect(self.surface, self.background_color, (0, 0, *get(self.size)), border_radius=self.corner_radius)
+            else:
+                self.surface.fill(self.background_color)
+        if self.contour_color:
+            pygame.draw.rect(self.surface, self.contour_color, (0, 0, *get(self.size)), self.contour_width, border_radius=self.corner_radius)
         return self.surface
