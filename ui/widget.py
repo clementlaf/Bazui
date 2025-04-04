@@ -178,6 +178,6 @@ class Widget:
 
         # check for custom render method
         if self.render_method:
-            self.render_method(self.surface)
+            self.render_method(self)
         
         return self.surface
