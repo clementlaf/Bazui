@@ -9,6 +9,8 @@ class MainMenu(AppBaseState):
     def __init__(self, app):
         super().__init__(app)
 
+        self.title = "Menu"
+
         # add buttons for each available window
         available_windows = {
             "Tree Editor": self.add_tree_editor,
