@@ -2,23 +2,26 @@ import pygame
 from ui.link import get
 
 class Widget:
-    def __init__(self, pos, size, name, **kwargs):
+    def __init__(self, pos, size, name, app, **kwargs):
         self.pos = pos
         self.size = size
         self.name = name
+        self.app = app
 
         # states
-        self.hover = False
+        self.hovered = False  # Can be checked for event management
         self.selected = False  # Can be checked for event management
 
         # attributes
         self.on_click = None
         self.on_hover = None
+        self.on_drag_reception = None
+        self.on_drag = None
         self.childs = []
         self.background_color = None
         self.has_surface = False
-        self.surface = None
         self.can_be_selected = False
+        self.can_be_dragged = False
 
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -52,6 +55,8 @@ class Widget:
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
+                if self.can_be_dragged and is_under_parent: # Dragging (no event consumption)
+                    self.app.app_state.dragged_widget = self
                 if self.can_be_selected or (self.on_click and is_under_parent):
                     if self.can_be_selected:
                         self.selected = True
@@ -60,13 +65,15 @@ class Widget:
                     return True  # Stop event propagation
         if event.type == pygame.MOUSEMOTION:
             if self.rect.collidepoint(event.pos):
-                self.hover = True
-                if self.on_hover:
-                    self.on_hover(self)
-                    return True  # Stop event propagation
+                self.hovered = True
+                return True
             else:
-                self.hover = False
-
+                self.hovered = False
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                if self.on_drag_reception and self.app.app_state.dragged_widget:
+                    self.on_drag_reception(self.app.app_state.dragged_widget)
+            self.app.app_state.dragged_widget = None
         return False
 
     def draw(self, screen: pygame.Surface, origin: tuple[int, int]=(0, 0)):
@@ -101,7 +108,6 @@ class Widget:
 
         if self.has_surface:
             self.surface = pygame.Surface(get(self.size))
-            self.has_surface = True
 
     def __getitem__(self, widget_name):
         for widget in self.childs:
@@ -134,6 +140,11 @@ class Widget:
     def update(self):
         """Update the widget and its childs.
         """
+
+        if self.app.app_state.dragged_widget == self and self.can_be_dragged and self.on_drag:
+            self.on_drag()
+        if self.hovered and self.on_hover:
+            self.on_hover()
 
         if self.has_surface and self.surface.size != get(self.size):
             new_surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
