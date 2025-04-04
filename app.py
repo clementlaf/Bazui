@@ -26,3 +26,6 @@ class App:
 
     def update(self):
         self.app_state.screen_size = self.screen.get_size()
+        self.app_state.mouse_pos = pygame.mouse.get_pos()
+
+        #print(self.app_state.dragged_widget)
