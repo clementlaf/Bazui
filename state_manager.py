@@ -6,6 +6,8 @@ class StateManager:
 
     def set_active(self, state_idx):
         self.crt_state = state_idx
+        self.opened_states[state_idx].ui_context.exit_events = True
+        self.opened_states[state_idx].on_activation()
     def add_state(self, state):
         self.opened_states.append(state)
 
