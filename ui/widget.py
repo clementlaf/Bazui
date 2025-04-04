@@ -25,6 +25,7 @@ class Widget:
         self.contour_color = None
         self.contour_width = 0
         self.corner_radius = 0
+        self.render_method = None
 
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -174,4 +175,9 @@ class Widget:
                 self.surface.fill(self.background_color)
         if self.contour_color:
             pygame.draw.rect(self.surface, self.contour_color, (0, 0, *get(self.size)), self.contour_width, border_radius=self.corner_radius)
+
+        # check for custom render method
+        if self.render_method:
+            self.render_method(self.surface)
+        
         return self.surface
