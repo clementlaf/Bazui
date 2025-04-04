@@ -4,6 +4,7 @@ class UIContext:
         self.app_state = app_state
         self.widgets = {}  # Store UI elements like buttons, panels, etc.
         self.crt_max_id = 0
+        self.exit_events = False  # Flag to indicate if the update loop should exit
 
     def add_widget(self, widget):
         """Add a widget to the UI context."""
@@ -13,8 +14,11 @@ class UIContext:
         return free_id
 
     def handle_events(self, event):
+        self.exit_events = False  # Reset exit flag for each event
         for widget in self.widgets.values():
             widget.handle_event(event)
+            if self.exit_events:
+                break
 
     def update(self):
         for widget in self.widgets.values():
@@ -37,7 +41,13 @@ class UIContext:
         return None
 
     def remove_widget(self, widget_id):
-        del self.widgets[widget_id]
+        try:
+            del self.widgets[widget_id]
+        except KeyError:
+            # the widget was not found
+            pass
+        except Exception as e:
+            print(f"Error removing widget: {e}")
 
     def __repr__(self):
         txt = []
