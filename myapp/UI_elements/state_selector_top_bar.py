@@ -1,11 +1,28 @@
+import pygame
+
 from ui.widget import Widget
 from ui.text import SingleLineText
 from ui.link import get, LinkByMethod as LM, LinkAttribute as LA
+from states.event_helpers import no_selection
 
 def build(app, font, close_window_func):
     screen_size_link = LA(app.app_state, "screen_size")
     top_bar_size = LM(screen_size_link, lambda x: (get(x)[0], 50))
     top_bar = Widget((0, 0), top_bar_size, "top_bar", app, background_color="#2D2D2D")
+
+    # add window title at top right corner
+    title = app.state_manager.opened_states[app.state_manager.crt_state].title
+    title_size = app.app_state.title1f.size(title)
+    title_pos = LM(top_bar, lambda x: (get(x.pos)[0] + get(x.size)[0] - title_size[0] - 10, get(x.pos)[1]))
+    title_text = top_bar.set_child(SingleLineText(title_pos,
+                                                  title_size,
+                                                  "title_text",
+                                                  app,
+                                                  text=title,
+                                                  font=app.app_state.title1f,
+                                                  size_auto_fit=False,
+                                                  text_color="#252526",
+                                                  on_drag=no_selection))
 
     opened_states = app.state_manager.opened_states
     x_pos = 0
@@ -34,8 +51,9 @@ def build(app, font, close_window_func):
                                                          (10, 10),
                                                          f"close_button_{i}",
                                                          app,
-                                                         background_color="#FF0000",
-                                                         on_click=close_window_func
+                                                         on_click=close_window_func,
+                                                         has_surface=True,
+                                                         render_method=exit_button_draw,
                                                          ))
         
         # draw the number of the state
@@ -44,6 +62,9 @@ def build(app, font, close_window_func):
     return top_bar
 
 
-def exit_button_draw(self, surface):
+def exit_button_draw(self):
     # render a red circle innside it
-    pass
+    color = (100, 0, 0)
+    if self.hovered:
+        color = (255, 0, 0)
+    pygame.draw.circle(self.surface, color, (5, 5), 5)
