@@ -229,8 +229,7 @@ class SingleLineText(Widget):
 
     def access_surface(self):
         # clear surface
-        if self.background_color:
-            self.surface.fill(self._background_color)
+        super().access_surface()
         # render selection
         if self.selection_start is not None:
             sel_min = min(self.selection_start, self.selection_end)
