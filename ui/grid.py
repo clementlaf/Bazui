@@ -1,8 +1,13 @@
+import pygame
+
 from ui.widget import Widget
 from ui.link import get, LinkByMethod, LinkAttribute
 
 class Grid(Widget):
-    def __init__(self, pos, size, name, grid_shape, **kwargs):
+    def __init__(self, pos, size, name, app, grid_shape, **kwargs):
+        super().__init__(pos, size, name, app)
+
+        # grid attributes
         self.grid_shape = grid_shape
         self.grid_poses = {}
 
@@ -11,14 +16,25 @@ class Grid(Widget):
         self.margin = 0   # margin between grid and widget border
         self.grid_type = "fixed_regular"
 
-        super().__init__(pos, size, name, **kwargs)
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+            else:
+                raise AttributeError(f"Grid has no attribute {key}")
 
-        self.childs = [None for _ in range(grid_shape[0] * grid_shape[1])]
-        self.arrange()
+        # grid setup
+        self._grid_setup()
 
     def arrange(self):
         if self.grid_type == "fixed_regular":
             self.arrange_fixed_regular()
+
+    def _grid_setup(self):
+        self.childs = [None for _ in range(self.grid_shape[0] * self.grid_shape[1])]
+        self.arrange()
+
+        if self.has_surface:
+            self.surface = pygame.Surface(get(self.size))
 
     def arrange_fixed_regular(self):
         # define cell size link
@@ -44,6 +60,7 @@ class Grid(Widget):
         self.childs[self.grid_pos_to_list_pos(grid_pos)] = child
         if child:
             child.pos = self.grid_poses[grid_pos]
+        return child
 
     @property
     def cell_size(self):
