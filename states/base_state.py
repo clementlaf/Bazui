@@ -19,3 +19,7 @@ class BaseState:
     def draw(self, screen):
         screen.fill(self.app_state.background_color)
         self.ui_context.draw(screen)
+
+    def on_activation(self):
+        """Called when the state is activated."""
+        pass
