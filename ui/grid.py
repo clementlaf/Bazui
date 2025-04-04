@@ -34,7 +34,7 @@ class Grid(Widget):
         self.arrange()
 
         if self.has_surface:
-            self.surface = pygame.Surface(get(self.size))
+            self.surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
 
     def arrange_fixed_regular(self):
         # define cell size link
