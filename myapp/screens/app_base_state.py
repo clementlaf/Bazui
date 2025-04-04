@@ -2,10 +2,11 @@ from states.base_state import BaseState
 from myapp.UI_elements import state_selector_top_bar
 
 class AppBaseState(BaseState):
+
     def __init__(self, app):
         super().__init__(app)
 
-        self.setup_top_bar()
+        self.title = "App Base State"
 
     def on_activation(self):
 
