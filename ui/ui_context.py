@@ -38,3 +38,9 @@ class UIContext:
 
     def remove_widget(self, widget_id):
         del self.widgets[widget_id]
+
+    def __repr__(self):
+        txt = []
+        for widget_id, widget in self.widgets.items():
+            txt.append(f"{widget_id}: {widget}")
+        return "\n".join(txt)
