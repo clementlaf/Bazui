@@ -5,28 +5,34 @@ from ui.widget import Widget
 from ui.link import get
 
 class SingleLineText(Widget):
-    def __init__(self, pos, size, name, **kwargs):
-        # attributes
+    def __init__(self, pos, size, name, app, **kwargs):
+        super().__init__(pos, size, name, app)
+
+        # customisable attributes
         self.text = ""
         self.font = pygame.font.Font()
         self.text_color = (255, 255, 255)
         self.size_auto_fit = False
         self.editable = False
-        self.has_cursor = True
         self.cursor_pos = 0
         self.cursor_color = (50, 0, 100)
         self.redo_stack_max_size = 20
         self.undo_stack_max_size = 20
 
-        # modified default attributes
         self.background_color = (0, 0, 0, 0)
+        self.on_drag = self.base_comportment_when_dragged
 
-        super().__init__(pos, size, name, **kwargs)
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+            else:
+                raise AttributeError(f"SingleLineText has no attribute {key}")
 
         # forced attributes
         self.has_surface = True
-        self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
         self._background_color = self.background_color
+        self.can_be_dragged = True
         self.repeatable_event = None
         self.repeatable_first_activated = 0
         self.repeatable_last_activated = 0
@@ -57,11 +63,12 @@ class SingleLineText(Widget):
     def handle_event(self, event, is_under_parent=True):
         return_code = super().handle_event(event, is_under_parent)
 
+        if event.type == pygame.MOUSEBUTTONDOWN and self.selected:
+            self.cursor_pos = self.mouse_to_cursor(event.pos)
+            self.reset_selection()
+            return 1
+
         if self.editable:
-            if event.type == pygame.MOUSEBUTTONDOWN and self.selected:
-                self.cursor_pos = self.mouse_to_cursor(event.pos)
-                self.reset_selection()
-                return 1
 
             if event.type == pygame.KEYUP:
                 if self.repeatable_event and self.repeatable_event.key == event.key:
@@ -142,13 +149,13 @@ class SingleLineText(Widget):
                         return 1
                     elif event.key == pygame.K_RETURN: # ENTER
                         return 1
-                    elif event.key == pygame.K_LEFT and self.has_cursor: # LEFT
+                    elif event.key == pygame.K_LEFT and self.editable: # LEFT
                         self.cursor_pos -= 1
                         self.bound_cursor()
                         self.reset_selection()
                         self.set_repeatable(event)
                         return 1
-                    elif event.key == pygame.K_RIGHT and self.has_cursor: # RIGHT
+                    elif event.key == pygame.K_RIGHT and self.editable: # RIGHT
                         self.cursor_pos += 1
                         self.bound_cursor()
                         self.reset_selection()
@@ -201,7 +208,7 @@ class SingleLineText(Widget):
         relative_pos = (pos[0] - get(self.pos)[0], pos[1] - get(self.pos)[1])
         for i in range(len(self.text) + 1):
             if self.font.size(self.text[:i])[0] > relative_pos[0]:
-                return i - 1
+                return max(0, i - 1) # max to avoid negative cursor_pos
         return len(self.text)
 
     def set_repeatable(self, event):
@@ -228,11 +235,11 @@ class SingleLineText(Widget):
         if self.selection_start is not None:
             sel_min = min(self.selection_start, self.selection_end)
             sel_max = max(self.selection_start, self.selection_end)
-            sel_rect = pygame.Rect(self.font.size(self.text[:sel_min])[0], 0, self.font.size(self.text[sel_min:sel_max])[0], self.size[1])
+            sel_rect = pygame.Rect(self.font.size(self.text[:sel_min])[0], 0, self.font.size(self.text[sel_min:sel_max])[0], get(self.size)[1])
             pygame.draw.rect(self.surface, [min(int(el*1.5), 255) for el in self.cursor_color], sel_rect)
         # render cursor
         if self.selected:
-            pygame.draw.rect(self.surface, self.cursor_color, (self.font.size(self.text[:self.cursor_pos])[0], 0, self.font.get_height()//2, self.size[1]))
+            pygame.draw.rect(self.surface, self.cursor_color, (self.font.size(self.text[:self.cursor_pos])[0], 0, self.font.get_height()//2, get(self.size)[1]))
         # render text
         self.surface.blit(self.text_render, (0, 0))
 
@@ -316,3 +323,11 @@ class SingleLineText(Widget):
     def reset_selection(self):
         self.selection_start = None
         self.selection_end = None
+
+    def base_comportment_when_dragged(self):
+        mouse_pos = self.app.app_state.mouse_pos
+        crt_cursor_pos = self.mouse_to_cursor(mouse_pos)
+        if self.selection_start is None:
+            self.selection_start = self.cursor_pos
+        self.cursor_pos = crt_cursor_pos
+        self.selection_end = self.cursor_pos
