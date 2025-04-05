@@ -14,8 +14,10 @@ class SingleLineText(Widget):
         self.text_color = (255, 255, 255)
         self.size_auto_fit = False
         self.editable = False
+        self.selectable = False
         self.cursor_pos = 0
-        self.cursor_color = (50, 0, 100)
+        self.cursor_color = (255, 255, 255)
+        self.selection_color = "#264F78"
         self.redo_stack_max_size = 20
         self.undo_stack_max_size = 20
 
@@ -32,7 +34,7 @@ class SingleLineText(Widget):
         self.has_surface = True
         self.surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
         self._background_color = self.background_color
-        self.can_be_dragged = True
+        self.can_be_dragged = self.selectable
         self.repeatable_event = None
         self.repeatable_first_activated = 0
         self.repeatable_last_activated = 0
@@ -41,6 +43,7 @@ class SingleLineText(Widget):
         self.redo_stack = []
         self.selection_start = None
         self.selection_end = None
+        self.time_at_update = 0
 
 
         # initialize attributes
@@ -53,9 +56,10 @@ class SingleLineText(Widget):
     def set_text(self, text):
         self.text = text
         if self.size_auto_fit:
-            self.size = self.font.size(self.text + ' ')[0], self.size[1] # add space to render cursor on last char
+            self.size = self.font.size(self.text)[0], self.size[1] # add space to render cursor on last char
             self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
         self.build_text_render()
+        self.time_at_update = time.time()
 
     def build_text_render(self):
         self.text_render = self.font.render(self.text, True, self.text_color)
@@ -67,6 +71,10 @@ class SingleLineText(Widget):
             self.cursor_pos = self.mouse_to_cursor(event.pos)
             self.reset_selection()
             return 1
+        
+        if event.type == pygame.MOUSEBUTTONDOWN and self.selection_start is not None:
+            if not self.rect.collidepoint(event.pos):
+                self.reset_selection()
 
         if self.editable:
 
@@ -207,8 +215,16 @@ class SingleLineText(Widget):
     def mouse_to_cursor(self, pos):
         relative_pos = (pos[0] - get(self.pos)[0], pos[1] - get(self.pos)[1])
         for i in range(len(self.text) + 1):
-            if self.font.size(self.text[:i])[0] > relative_pos[0]:
-                return max(0, i - 1) # max to avoid negative cursor_pos
+            diff = self.font.size(self.text[:i])[0] - relative_pos[0]
+            if diff >= 0:
+
+                diff_prev = self.font.size(self.text[:i - 1])[0] - relative_pos[0]
+                ret = i
+                if abs(diff_prev) < abs(diff):
+                    ret = i - 1
+                ret = max(0, min(ret, len(self.text)))
+                return ret
+
         return len(self.text)
 
     def set_repeatable(self, event):
@@ -222,7 +238,7 @@ class SingleLineText(Widget):
 
     def update(self):
         if self.repeatable_event:
-            if time.time() - self.repeatable_last_activated > 0.05 and time.time() - self.repeatable_first_activated > 0.5:
+            if time.time() - self.repeatable_last_activated > 0.04 and time.time() - self.repeatable_first_activated > 0.5:
                 self.repeatable_last_activated = time.time()
                 self.handle_event(self.repeatable_event, is_under_parent=False)
         super().update()
@@ -235,10 +251,12 @@ class SingleLineText(Widget):
             sel_min = min(self.selection_start, self.selection_end)
             sel_max = max(self.selection_start, self.selection_end)
             sel_rect = pygame.Rect(self.font.size(self.text[:sel_min])[0], 0, self.font.size(self.text[sel_min:sel_max])[0], get(self.size)[1])
-            pygame.draw.rect(self.surface, [min(int(el*1.5), 255) for el in self.cursor_color], sel_rect)
+            pygame.draw.rect(self.surface, self.selection_color, sel_rect)
         # render cursor
-        if self.selected:
-            pygame.draw.rect(self.surface, self.cursor_color, (self.font.size(self.text[:self.cursor_pos])[0], 0, self.font.get_height()//2, get(self.size)[1]))
+        if self.selected and self.editable:
+            # draw cursor
+            if (time.time() - self.time_at_update) % 1 < 0.5:
+                pygame.draw.rect(self.surface, self.cursor_color, (self.font.size(self.text[:self.cursor_pos])[0], 0, 2, get(self.size)[1]))
         # render text
         self.surface.blit(self.text_render, (0, 0))
 
