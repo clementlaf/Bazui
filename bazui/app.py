@@ -4,9 +4,12 @@ from bazui.app_state import AppState
 from bazui.library import ImageLibrary
 
 class App:
-    def __init__(self):
-        pygame.init()
-        self.app_state = AppState()  # Global state
+    def __init__(self, app_state=None):
+        #pygame.init()
+        if app_state is not None:
+            self.app_state = app_state
+        else:
+            self.app_state = AppState()
         self.screen = pygame.display.set_mode(self.app_state.screen_size, pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
         self.running = True
