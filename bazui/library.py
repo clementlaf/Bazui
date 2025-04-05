@@ -33,14 +33,14 @@ class ImageLibrary:
             if el.get("name") not in self:
                 self._load_queue.put(el)
 
-    def add(self, name, obj):
-        """Add an object to the library.
+    def __setitem__(self, name, image):
+        """Set an object in the library.
 
         Args:
             name (str): The name of the object.
-            obj (object): The object to add.
+            image (object): The object to be stored.
         """
-        self._resources[name] = obj
+        self.load_async([{"name": name, "path": image}])
 
     def __getitem__(self, name):
         """Get an object from the library.
@@ -72,3 +72,11 @@ class ImageLibrary:
         """
         if name in self._resources:
             del self._resources[name]
+
+    def __repr__(self):
+        """Get a string representation of the library.
+
+        Returns:
+            str: The string representation of the library.
+        """
+        return f"ImageLibrary({len(self._resources)} items) \n" + "\n".join(self._resources.keys())
