@@ -1,7 +1,7 @@
 import pygame
 
-from ui.widget import Widget
-from ui.link import get, LinkByMethod, LinkAttribute
+from bazui.ui.widget import Widget
+from bazui.ui.link import get, LinkByMethod, LinkAttribute
 
 class Grid(Widget):
     def __init__(self, pos, size, name, app, grid_shape, **kwargs):

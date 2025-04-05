@@ -1,8 +1,8 @@
 import time
 from string import ascii_letters as al
 import pygame
-from ui.widget import Widget
-from ui.link import get
+from bazui.ui.widget import Widget
+from bazui.ui.link import get
 
 class SingleLineText(Widget):
     def __init__(self, pos, size, name, app, **kwargs):

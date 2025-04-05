@@ -1,5 +1,5 @@
 import pygame
-from ui.ui_context import UIContext
+from bazui.ui.ui_context import UIContext
 
 class BaseState:
     def __init__(self, app):

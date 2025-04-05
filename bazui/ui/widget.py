@@ -1,5 +1,5 @@
 import pygame
-from ui.link import get
+from bazui.ui.link import get
 
 class Widget:
     def __init__(self, pos, size, name, app, **kwargs):
