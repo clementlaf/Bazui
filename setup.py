@@ -19,6 +19,6 @@ setup(
 )
 
 
-# build by running "pip install -e path_to/Bazui/bazui" from the parent directory
+# build by running "pip install -e path_to/Bazui"
 # this will install the package in editable mode, allowing you to make changes to the code without reinstalling it
 # and the package will be available for import in your Python environment
