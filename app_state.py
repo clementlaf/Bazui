@@ -6,6 +6,7 @@ class AppState:
         self.screen_size = (800, 600)
         self.background_color = "#1E1E1E"
         self.text_font = "data/fonts/Inconsolata-VariableFont_wdth,wght.ttf"
+        self.test_image = pygame.image.load("d:/medias/photos/portable2/1739303837285.jpg")
 
         # parameters
         self.undo_stack_max_size = 20
