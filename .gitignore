@@ -1,3 +1,4 @@
 *.pyc
 *.pyo
-ui2/*
+ui2/
+bazui.egg-info/
