@@ -13,3 +13,5 @@ class AppState:
         # states
         self.dragged_widget = None
         self.mouse_pos = (0, 0)
+        self.clicked_widget = None
+        self.clicked_widget_pos = (0, 0)
