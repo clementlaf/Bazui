@@ -1,6 +1,7 @@
 import pygame
-from state_manager import StateManager
-from app_state import AppState
+from bazui.state_manager import StateManager
+from bazui.app_state import AppState
+from bazui.library import ImageLibrary
 
 class App:
     def __init__(self):
@@ -10,6 +11,7 @@ class App:
         self.clock = pygame.time.Clock()
         self.running = True
         self.state_manager = StateManager(self)
+        self.library = ImageLibrary()  # Library for storing images
 
     def run(self):
         while self.running:
@@ -27,5 +29,3 @@ class App:
     def update(self):
         self.app_state.screen_size = self.screen.get_size()
         self.app_state.mouse_pos = pygame.mouse.get_pos()
-
-        #print(self.app_state.dragged_widget)
