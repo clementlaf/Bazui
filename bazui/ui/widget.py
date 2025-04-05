@@ -59,13 +59,15 @@ class Widget:
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
-                if self.can_be_dragged and is_under_parent: # Dragging (no event consumption)
-                    self.app.app_state.dragged_widget = self
-                if self.can_be_selected or (self.on_click and is_under_parent):
-                    if self.can_be_selected:
-                        self.selected = True
+                if (self.can_be_dragged and is_under_parent) or (self.on_click and is_under_parent) or (self.can_be_selected or (self.on_click and is_under_parent)):
+                    if self.can_be_dragged and is_under_parent: # Dragging (no event consumption)
+                        self.app.app_state.dragged_widget = self
+                    if self.can_be_selected or (self.on_click and is_under_parent):
+                        if self.can_be_selected:
+                            self.selected = True
                     if self.on_click and is_under_parent:
-                        self.on_click(self)
+                        self.app.app_state.clicked_widget = self
+                        self.app.app_state.clicked_widget_pos = event.pos
                     return True  # Stop event propagation
         if event.type == pygame.MOUSEMOTION:
             if self.rect.collidepoint(event.pos):
@@ -77,7 +79,16 @@ class Widget:
             if self.rect.collidepoint(event.pos):
                 if self.on_drag_reception and self.app.app_state.dragged_widget:
                     self.on_drag_reception(self.app.app_state.dragged_widget)
-            self.app.app_state.dragged_widget = None
+                if self.on_click and is_under_parent and self.app.app_state.clicked_widget == self:
+                    if event.pos == self.app.app_state.clicked_widget_pos:
+                        self.on_click(self)
+            
+            # state reset
+            if self.app.app_state.dragged_widget == self:
+                self.app.app_state.dragged_widget = None
+            if self.app.app_state.clicked_widget == self:
+                self.app.app_state.clicked_widget = None
+                self.app.app_state.clicked_widget_pos = (0, 0)
         return False
 
     def draw(self, screen: pygame.Surface, origin: tuple[int, int]=(0, 0)):
