@@ -5,7 +5,6 @@ from bazui.library import ImageLibrary
 
 class App:
     def __init__(self, app_state=None):
-        #pygame.init()
         if app_state is not None:
             self.app_state = app_state
         else:
