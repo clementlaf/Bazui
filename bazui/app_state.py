@@ -9,6 +9,7 @@ class AppState:
         # parameters
         self.undo_stack_max_size = 20
         self.redo_stack_max_size = 20
+        self.max_move_click_distance = 10
 
         # states
         self.dragged_widget = None
