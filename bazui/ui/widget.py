@@ -17,6 +17,7 @@ class Widget:
         self.on_hover = None
         self.on_drag_reception = None
         self.on_drag = None
+        self.on_deselect = None
         self.childs = []
         self.background_color = None
         self.has_surface = False
@@ -26,6 +27,7 @@ class Widget:
         self.contour_width = 0
         self.corner_radius = 0
         self.render_method = None
+        self.bounded_to_parent = False
 
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -40,9 +42,6 @@ class Widget:
         return pygame.Rect(get(self.pos), get(self.size))
 
     def handle_event(self, event, is_under_parent=True):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            self.selected = False
-
         if hasattr(event, "pos"):
             # Perform event handling on childs (all childs are checked)
             consumed = 0
@@ -59,16 +58,20 @@ class Widget:
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
-                if (self.can_be_dragged and is_under_parent) or (self.on_click and is_under_parent) or (self.can_be_selected or (self.on_click and is_under_parent)):
-                    if self.can_be_dragged and is_under_parent: # Dragging (no event consumption)
+                if (self.can_be_dragged and (not self.bounded_to_parent or is_under_parent)) or (self.on_click and (not self.bounded_to_parent or is_under_parent)) or (self.can_be_selected or (self.on_click and (not self.bounded_to_parent or is_under_parent))):
+                    if self.can_be_dragged and (not self.bounded_to_parent or is_under_parent): # Dragging (no event consumption)
                         self.app.app_state.dragged_widget = self
-                    if self.can_be_selected or (self.on_click and is_under_parent):
+                    if self.can_be_selected or (self.on_click and (not self.bounded_to_parent or is_under_parent)):
                         if self.can_be_selected:
                             self.selected = True
-                    if self.on_click and is_under_parent:
+                    if self.on_click and (not self.bounded_to_parent or is_under_parent):
                         self.app.app_state.clicked_widget = self
                         self.app.app_state.clicked_widget_pos = event.pos
                     return True  # Stop event propagation
+            else:
+                self.selected = False
+                if self.on_deselect and (not self.bounded_to_parent or is_under_parent):
+                    self.on_deselect(self)
         if event.type == pygame.MOUSEMOTION:
             if self.rect.collidepoint(event.pos):
                 self.hovered = True
@@ -153,7 +156,10 @@ class Widget:
             widget (Widget): The widget to remove.
         """
 
-        self.childs.remove(widget)
+        try:
+            self.childs.remove(widget)
+        except ValueError:
+            pass
 
     def update(self):
         """Update the widget and its childs.
