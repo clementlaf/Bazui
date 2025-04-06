@@ -356,6 +356,7 @@ class MultiLineText(SingleLineText):
     def __init__(self, pos, size, name, app, **kwargs):
         self.line_spacing = 0
         self.paragraph_spacing = 0
+        self.max_lines = None
         super().__init__(pos, size, name, app, **kwargs)
 
 
@@ -462,6 +463,7 @@ class MultiLineText(SingleLineText):
 
     def set_text(self, text):
         self.text = text
+        self.bound_text_to_max_lines()
         self.lines = self.decompose_text()
         if self.size_auto_fit:
             self.size = get(self.size[0]), self.line_pos_to_px_pos(len(self.lines)-1) + self.font.get_height() + self.paragraph_spacing
@@ -568,6 +570,14 @@ class MultiLineText(SingleLineText):
                     return 1
 
         return return_code
+
+    def bound_text_to_max_lines(self):
+        """Adjusts the text to fit within the maximum number of lines."""
+        if self.max_lines is not None:
+            lines = self.text.split("\n")
+            if len(lines) > self.max_lines:
+                self.text = "\n".join(lines[:self.max_lines])
+                self.bound_cursor()
 
 
 class Line:
