@@ -18,8 +18,8 @@ class SingleLineText(Widget):
         self.cursor_pos = 0
         self.cursor_color = (255, 255, 255)
         self.selection_color = "#264F78"
-        self.redo_stack_max_size = 20
-        self.undo_stack_max_size = 20
+        self.redo_stack_max_size = self.app.app_state.redo_stack_max_size
+        self.undo_stack_max_size = self.app.app_state.undo_stack_max_size
 
         self.background_color = (0, 0, 0, 0)
         self.on_drag = self.base_comportment_when_dragged
@@ -69,9 +69,10 @@ class SingleLineText(Widget):
 
         if event.type == pygame.MOUSEBUTTONDOWN and self.selected:
             self.cursor_pos = self.mouse_to_cursor(event.pos)
+            self.time_at_update = time.time()
             self.reset_selection()
             return 1
-        
+
         if event.type == pygame.MOUSEBUTTONDOWN and self.selection_start is not None:
             if not self.rect.collidepoint(event.pos):
                 self.reset_selection()
@@ -348,3 +349,203 @@ class SingleLineText(Widget):
             self.selection_start = self.cursor_pos
         self.cursor_pos = crt_cursor_pos
         self.selection_end = self.cursor_pos
+        self.time_at_update = time.time()
+
+
+class MultiLineText(SingleLineText):
+    def __init__(self, pos, size, name, app, **kwargs):
+        self.line_spacing = 0
+        super().__init__(pos, size, name, app, **kwargs)
+
+
+    def decompose_text(self):
+        """Break self.text into display lines, handling wrapping."""
+        raw_lines = self.text.split("\n")
+        max_width = get(self.size)[0]
+        result_lines = []
+
+        for raw_line in raw_lines:
+
+            if raw_line == "":
+                result_lines.append(Line("", starts_paragraph=True))
+                continue
+
+            words = raw_line.split(" ")
+            current_line = ""
+            is_first = True
+
+            while words:
+                word = words[0]
+                test_line = current_line + (" " if current_line else "") + word
+                if self.font.size(test_line)[0] <= max_width:
+                    current_line = test_line
+                    words.pop(0)
+                else:
+                    if current_line == "":
+                        # word too long to fit alone — force it in
+                        current_line = word
+                        words.pop(0)
+                    result_lines.append(Line(current_line, starts_paragraph=is_first))
+                    current_line = ""
+                    is_first = False
+
+            if current_line:
+                result_lines.append(Line(current_line, starts_paragraph=is_first))
+
+        for eline in result_lines:
+            print(f"|{eline.text}|")
+        return result_lines
+
+    def text_pos_to_line_pos(self, pos):
+        """Convert character index `pos` in self.text to (line_index, in_line_pos)."""
+        if not self.lines:
+            return 0, 0
+
+        current_pos = 0
+
+        for i, line in enumerate(self.lines):
+            line_len = len(line.text)
+            if pos <= current_pos + line_len:
+                return i, pos - current_pos
+            current_pos += line_len + 1 # +1 for the '\n' character or the space separator
+
+        # Clamp to end
+        last_line = len(self.lines) - 1
+        return last_line, len(self.lines[last_line].text)
+
+    def line_pos_to_text_pos(self, line_idx, in_line_pos):
+        """Convert (line, col) back to char index in full self.text"""
+        pos = 0
+        for i in range(line_idx):
+            pos += len(self.lines[i].text) + 1 # +1 for the '\n' character or the space separator
+        return pos + in_line_pos
+
+    def line_pos_to_px_pos(self, line_pos):
+        """Converts a line position to a pixel position.
+
+        Args:
+            line_pos (int): The line position.
+
+        Returns:
+            int: The pixel position.
+        """
+
+        line_px_pos = 0
+        for i in range(line_pos):
+            line_px_pos += self.font.get_height() + self.line_spacing
+            if self.lines[i].starts_paragraph:
+                line_px_pos += self.line_spacing
+        return line_px_pos
+
+    def set_text(self, text):
+        self.text = text
+        self.lines = self.decompose_text()
+        if self.size_auto_fit:
+            self.size = get(self.size[0]), len(self.lines) * self.font.get_height() + max(0, self.line_spacing * (len(self.lines) - 1))
+            self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.build_text_render()
+        self.time_at_update = time.time()
+
+    def build_text_render(self):
+        self.text_render = [self.font.render(line.text, True, self.text_color) for line in self.lines]
+
+    def access_surface(self):
+
+        # clear surface
+        Widget.access_surface(self)
+        # render selection
+        if self.selection_start is not None:
+            sel_min = min(self.selection_start, self.selection_end)
+            sel_max = max(self.selection_start, self.selection_end)
+
+            start_line_pos, start_char_pos = self.text_pos_to_line_pos(sel_min)
+            end_line_pos, end_char_pos = self.text_pos_to_line_pos(sel_max)
+            start_line_px_pos = self.line_pos_to_px_pos(start_line_pos)
+            end_line_px_pos = self.line_pos_to_px_pos(end_line_pos)
+            # draw selection rect
+            if start_line_pos == end_line_pos:
+                sel_rect = pygame.Rect(self.font.size(self.lines[start_line_pos].text[:start_char_pos])[0], start_line_px_pos, self.font.size(self.lines[start_line_pos].text[start_char_pos:end_char_pos])[0], self.font.get_height())
+                pygame.draw.rect(self.surface, self.selection_color, sel_rect)
+            else:
+                # draw selection rect for first line
+                sel_rect = pygame.Rect(self.font.size(self.lines[start_line_pos].text[:start_char_pos])[0], start_line_px_pos, self.font.size(self.lines[start_line_pos].text[start_char_pos:])[0], self.font.get_height())
+                pygame.draw.rect(self.surface, self.selection_color, sel_rect)
+                # draw selection rect for last line
+                sel_rect = pygame.Rect(0, end_line_px_pos, self.font.size(self.lines[end_line_pos].text[:end_char_pos])[0], self.font.get_height())
+                pygame.draw.rect(self.surface, self.selection_color, sel_rect)
+                # draw selection rect for middle lines
+                for i in range(start_line_pos + 1, end_line_pos):
+                    sel_rect = pygame.Rect(0, self.line_pos_to_px_pos(i), get(self.size)[0], self.font.get_height())
+                    pygame.draw.rect(self.surface, self.selection_color, sel_rect)
+
+        # render cursor
+        if self.selected and self.editable:
+            # draw cursor
+            if (time.time() - self.time_at_update) % 1 < 0.5:
+                line_pos, char_pos = self.text_pos_to_line_pos(self.cursor_pos)
+                line_px_pos = self.line_pos_to_px_pos(line_pos)
+                pygame.draw.rect(self.surface, self.cursor_color, (self.font.size(self.lines[line_pos].text[:char_pos])[0], line_px_pos, 2, self.font.get_height()))
+        # render text
+        for i, _ in enumerate(self.lines):
+            line_pos = self.line_pos_to_px_pos(i)
+            self.surface.blit(self.text_render[i], (0, line_pos))
+
+        return self.surface
+
+    def mouse_to_cursor(self, pos):
+        """Converts a mouse position to a cursor position.
+
+        Args:
+            pos (tuple): The mouse position.
+
+        Returns:
+            int: The cursor position.
+        """
+
+        relative_pos = (pos[0] - get(self.pos)[0], pos[1] - get(self.pos)[1])
+        # line position
+        line_pos = 0
+        for i in range(len(self.lines)):
+            line_px_pos = self.line_pos_to_px_pos(i)
+            if relative_pos[1] < line_px_pos:
+                break
+            line_pos = i
+        # if the line position is out of range, set it to the last line
+        if line_pos >= len(self.lines):
+            line_pos = len(self.lines) - 1
+        # if the line position is negative, set it to the first line
+        if line_pos < 0:
+            line_pos = 0
+        # character position
+        char_pos = 0
+        for i in range(len(self.lines[line_pos].text) + 1):
+            diff = self.font.size(self.lines[line_pos].text[:i])[0] - relative_pos[0]
+            if diff >= 0:
+
+                diff_prev = self.font.size(self.lines[line_pos].text[:i - 1])[0] - relative_pos[0]
+                ret = i
+                if abs(diff_prev) < abs(diff):
+                    ret = i - 1
+                char_pos = max(0, min(ret, len(self.lines[line_pos].text)))
+        return self.line_pos_to_text_pos(line_pos, char_pos)
+
+    def handle_event(self, event, is_under_parent=True):
+        return_code = super().handle_event(event, is_under_parent)
+        
+        if self.editable:
+
+            if event.type == pygame.KEYDOWN and self.selected:
+
+                if event.key == pygame.K_RETURN:
+                    self.write("\n")
+                    self.reset_selection()
+                    self.set_repeatable(event)
+                    return 1
+
+        return return_code
+
+
+class Line:
+    def __init__(self, text, starts_paragraph=False):
+        self.text = text
+        self.starts_paragraph = starts_paragraph
