@@ -82,7 +82,7 @@ class Widget:
             if self.rect.collidepoint(event.pos):
                 if self.on_drag_reception and self.app.app_state.dragged_widget:
                     self.on_drag_reception(self.app.app_state.dragged_widget)
-                if self.on_click and is_under_parent and self.app.app_state.clicked_widget == self:
+                if self.on_click and (not self.bounded_to_parent or is_under_parent) and self.app.app_state.clicked_widget == self:
                     manhattan_distance = abs(event.pos[0] - self.app.app_state.clicked_widget_pos[0]) + abs(event.pos[1] - self.app.app_state.clicked_widget_pos[1])
                     if manhattan_distance < self.app.app_state.max_move_click_distance:
                         self.on_click(self)
