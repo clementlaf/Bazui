@@ -20,6 +20,7 @@ class SingleLineText(Widget):
         self.selection_color = "#264F78"
         self.redo_stack_max_size = self.app.app_state.redo_stack_max_size
         self.undo_stack_max_size = self.app.app_state.undo_stack_max_size
+        self.on_change = None
 
         self.background_color = (0, 0, 0, 0)
         self.on_drag = self.base_comportment_when_dragged
@@ -44,6 +45,7 @@ class SingleLineText(Widget):
         self.selection_start = None
         self.selection_end = None
         self.time_at_update = 0
+        self.previous_text = self.text
 
 
         # initialize attributes
@@ -243,6 +245,11 @@ class SingleLineText(Widget):
                 self.repeatable_last_activated = time.time()
                 self.handle_event(self.repeatable_event, is_under_parent=False)
         super().update()
+
+        if self.text != self.previous_text:
+            self.previous_text = self.text
+            if self.on_change:
+                self.on_change(self.text)
 
     def access_surface(self):
         # clear surface
