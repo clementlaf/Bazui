@@ -374,6 +374,7 @@ class MultiLineText(SingleLineText):
             words = raw_line.split(" ")
             current_line = ""
             is_first = True
+            is_word_break = False
 
             while words:
                 word = words[0]
@@ -383,18 +384,25 @@ class MultiLineText(SingleLineText):
                     words.pop(0)
                 else:
                     if current_line == "":
-                        # word too long to fit alone — force it in
-                        current_line = word
-                        words.pop(0)
-                    result_lines.append(Line(current_line, starts_paragraph=is_first))
+                        # word too long to fit alone — set as much of it as possible
+                        # find the longest prefix that fits
+                        for i in range(len(word), 0, -1):
+                            test_line = word[:i]
+                            if self.font.size(test_line)[0] <= max_width:
+                                break
+                        current_line = word[:i]
+                        words[0] = word[i:]  # put the rest back in the list
+                        result_lines.append(Line(current_line, starts_paragraph=is_first, is_word_break=is_word_break))
+                        is_word_break = True
+                    else:
+                        result_lines.append(Line(current_line, starts_paragraph=is_first, is_word_break=is_word_break))
+                        is_word_break = False
                     current_line = ""
                     is_first = False
 
             if current_line:
-                result_lines.append(Line(current_line, starts_paragraph=is_first))
+                result_lines.append(Line(current_line, starts_paragraph=is_first, is_word_break=is_word_break))
 
-        for eline in result_lines:
-            print(f"|{eline.text}|")
         return result_lines
 
     def text_pos_to_line_pos(self, pos):
@@ -406,9 +414,12 @@ class MultiLineText(SingleLineText):
 
         for i, line in enumerate(self.lines):
             line_len = len(line.text)
+            if line.is_word_break:
+                current_pos -= 1 # there was no character between lines
             if pos <= current_pos + line_len:
                 return i, pos - current_pos
             current_pos += line_len + 1 # +1 for the '\n' character or the space separator
+
 
         # Clamp to end
         last_line = len(self.lines) - 1
@@ -419,6 +430,10 @@ class MultiLineText(SingleLineText):
         pos = 0
         for i in range(line_idx):
             pos += len(self.lines[i].text) + 1 # +1 for the '\n' character or the space separator
+            if self.lines[i].is_word_break:
+                pos -= 1
+        if self.lines[line_idx].is_word_break:
+            pos -= 1
         return pos + in_line_pos
 
     def line_pos_to_px_pos(self, line_pos):
@@ -556,6 +571,7 @@ class MultiLineText(SingleLineText):
 
 
 class Line:
-    def __init__(self, text, starts_paragraph=False):
+    def __init__(self, text, starts_paragraph=False, is_word_break=False):
         self.text = text
         self.starts_paragraph = starts_paragraph
+        self.is_word_break = is_word_break
