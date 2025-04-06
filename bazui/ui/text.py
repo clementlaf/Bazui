@@ -355,6 +355,7 @@ class SingleLineText(Widget):
 class MultiLineText(SingleLineText):
     def __init__(self, pos, size, name, app, **kwargs):
         self.line_spacing = 0
+        self.paragraph_spacing = 0
         super().__init__(pos, size, name, app, **kwargs)
 
 
@@ -432,16 +433,23 @@ class MultiLineText(SingleLineText):
 
         line_px_pos = 0
         for i in range(line_pos):
-            line_px_pos += self.font.get_height() + self.line_spacing
             if self.lines[i].starts_paragraph:
+                line_px_pos += self.paragraph_spacing
+            else:
                 line_px_pos += self.line_spacing
+            line_px_pos += self.font.get_height()
+
+        if self.lines[line_pos].starts_paragraph:
+            line_px_pos += self.paragraph_spacing
+        else:
+            line_px_pos += self.line_spacing
         return line_px_pos
 
     def set_text(self, text):
         self.text = text
         self.lines = self.decompose_text()
         if self.size_auto_fit:
-            self.size = get(self.size[0]), len(self.lines) * self.font.get_height() + max(0, self.line_spacing * (len(self.lines) - 1))
+            self.size = get(self.size[0]), self.line_pos_to_px_pos(len(self.lines)-1) + self.font.get_height() + self.paragraph_spacing
             self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
         self.build_text_render()
         self.time_at_update = time.time()
@@ -518,16 +526,18 @@ class MultiLineText(SingleLineText):
             line_pos = 0
         # character position
         char_pos = 0
-        for i in range(len(self.lines[line_pos].text) + 1):
-            diff = self.font.size(self.lines[line_pos].text[:i])[0] - relative_pos[0]
+        line_text = self.lines[line_pos].text
+        for i in range(len(line_text) + 1):
+            diff = self.font.size(line_text[:i])[0] - relative_pos[0]
             if diff >= 0:
 
-                diff_prev = self.font.size(self.lines[line_pos].text[:i - 1])[0] - relative_pos[0]
+                diff_prev = self.font.size(line_text[:i - 1])[0] - relative_pos[0]
                 ret = i
                 if abs(diff_prev) < abs(diff):
                     ret = i - 1
-                char_pos = max(0, min(ret, len(self.lines[line_pos].text)))
-        return self.line_pos_to_text_pos(line_pos, char_pos)
+                char_pos = max(0, min(ret, len(line_text)))
+                return self.line_pos_to_text_pos(line_pos, char_pos)
+        return self.line_pos_to_text_pos(line_pos, len(line_text))
 
     def handle_event(self, event, is_under_parent=True):
         return_code = super().handle_event(event, is_under_parent)
