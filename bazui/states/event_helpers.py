@@ -5,6 +5,13 @@ def consume_event(widget):
 
     return True
 
+def method_wrapper(method):
+    """used to wrap a method to be used as a callback for an event
+    This is useful for methods that are not bound to a widget, such as functions
+    that are defined in the app class.
+    """
+    return lambda widget: method()
+
 def no_selection():
     """used to prevent text selection in text widgets
     """
