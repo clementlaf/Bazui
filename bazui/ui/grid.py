@@ -66,3 +66,26 @@ class Grid(Widget):
     def cell_size(self):
         return ((get(self.size)[0] - 2 * self.margin - (self.grid_shape[0] - 1) * self.padding) / self.grid_shape[0],
                 (get(self.size)[1] - 2 * self.margin - (self.grid_shape[1] - 1) * self.padding) / self.grid_shape[1])
+
+
+class DynamicContainer(Widget):
+    def __init__(self, pos, name, app, **kwargs):
+        super().__init__(pos, (0, 0), name, app, **kwargs)
+
+    def dynamic_attributes(self):
+        # child min x and y
+        min_x = min_y = 0
+        min_x = min(get(child.pos)[0] for child in self.childs if child)
+        min_y = min(get(child.pos)[1] for child in self.childs if child)
+
+        max_x = max_y = 0
+        max_x = max(get(child.pos)[0] + get(child.size)[0] for child in self.childs if child)
+        max_y = max(get(child.pos)[1] + get(child.size)[1] for child in self.childs if child)
+
+        # set the size of the widget to the size of the children
+        self.size = (max_x - min_x, max_y - min_y)
+        self.pos = (min_x, min_y)
+
+    def update(self):
+        self.dynamic_attributes()
+        super().update()
