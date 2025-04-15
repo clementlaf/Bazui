@@ -37,11 +37,6 @@ class Grid(Widget):
             self.surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
 
     def arrange_fixed_regular(self):
-        # define cell size link
-        # def cell_size(self):
-        #     return ((get(self.size)[0] - 2 * self.margin - (self.grid_shape[0] - 1) * self.padding) / self.grid_shape[0],
-        #             (get(self.size)[1] - 2 * self.margin - (self.grid_shape[1] - 1) * self.padding) / self.grid_shape[1])
-        # cell_size = LinkByMethod(self, cell_size)
         cell_size = LinkAttribute(self, "cell_size", self.app)
 
         # define links to cell positions
@@ -94,3 +89,91 @@ class DynamicContainer(Widget):
     def update(self):
         self.dynamic_attributes()
         super().update()
+
+class DynamicGrid(Widget):
+    def __init__(self, pos, size, name, app, **kwargs):
+        super().__init__(pos, size, name, app)
+
+        self.growable_children_indices = []
+        self.grid_direction = "horizontal"  # "horizontal" or "vertical"
+        self.padding = 0  # padding between grid cells
+        self.margin = 0   # margin between grid and widget border
+
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+            else:
+                raise AttributeError(f"DynamicGrid has no attribute {key}")
+
+        self._grid_setup()
+
+    def _grid_setup(self):
+        if self.has_surface:
+            self.surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
+
+        self.arrange()
+
+    def set_child(self, widget, growable=False):
+        super().set_child(widget)
+
+        if growable:
+            self.growable_children_indices.append(len(self.childs) - 1)
+
+        return widget
+
+    def arrange(self):
+        if self.grid_direction == "horizontal":
+            self.arrange_horizontal()
+        elif self.grid_direction == "vertical":
+            self.arrange_vertical()
+
+        else:
+            raise ValueError(f"Invalid grid direction: {self.grid_direction}.")
+
+    def arrange_horizontal(self):
+
+        to_grow_size = get(self.size)[0]
+
+        for i, child in enumerate(self.childs):
+            to_grow_size -= get(self.childs[i].size)[0]
+        to_grow_size -= self.margin * 2 + self.padding * (len(self.childs) - 1)
+
+        num_growables = len(self.growable_children_indices)
+        if num_growables > 0:
+            growable_size = to_grow_size / num_growables
+        else:
+            growable_size = 0
+
+        #adjust sizes
+        for i in self.growable_children_indices:
+            self.childs[i].size = (get(self.childs[i].size[0]) + growable_size, get(self.childs[i].size)[1])
+
+        # adjust positions
+        crt_x = get(self.pos)[0] + self.margin
+        for i, child in enumerate(self.childs):
+            child.pos = (crt_x, get(self.pos)[1] + self.margin)
+            crt_x += get(child.size)[0] + self.padding
+
+
+    def arrange_vertical(self):
+        pass
+
+    def update(self):
+        self.arrange()
+
+        super().update()
+
+    def remove_child(self, widget: "Widget"):
+        """Remove a child widget from the widget.
+
+        Args:
+            widget (Widget): The widget to remove.
+        """
+
+        try:
+            child_index = self.childs.index(widget)
+            if child_index in self.growable_children_indices:
+                self.growable_children_indices.remove(child_index)
+            self.childs.remove(widget)
+        except ValueError:
+            pass
