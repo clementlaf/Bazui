@@ -11,7 +11,7 @@ class UIContext:
         """Add a widget to the UI context."""
         free_id = self.crt_max_id
         self.widgets[free_id] = widget
-        self.sorted_widgets = sorted(self.widgets.values(), key=lambda x: x.z)
+        self.sorted_widgets = sorted(self.widgets.values(), key=lambda x: x.z, reverse=True)
         self.crt_max_id += 1
         return widget
 
@@ -28,7 +28,7 @@ class UIContext:
             widget.update()
 
     def draw(self, screen):
-        for widget in self.sorted_widgets:
+        for widget in self.sorted_widgets[::-1]:
             widget.draw(screen)
 
     def getbyid(self, widget_id):
@@ -46,7 +46,7 @@ class UIContext:
     def remove_widget(self, widget_id):
         try:
             del self.widgets[widget_id]
-            self.sorted_widgets = sorted(self.widgets.values(), key=lambda x: x.z)
+            self.sorted_widgets = sorted(self.widgets.values(), key=lambda x: x.z, reverse=True)
         except KeyError:
             # the widget was not found
             pass
