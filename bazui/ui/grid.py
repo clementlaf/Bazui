@@ -42,7 +42,7 @@ class Grid(Widget):
         #     return ((get(self.size)[0] - 2 * self.margin - (self.grid_shape[0] - 1) * self.padding) / self.grid_shape[0],
         #             (get(self.size)[1] - 2 * self.margin - (self.grid_shape[1] - 1) * self.padding) / self.grid_shape[1])
         # cell_size = LinkByMethod(self, cell_size)
-        cell_size = LinkAttribute(self, "cell_size")
+        cell_size = LinkAttribute(self, "cell_size", self.app)
 
         # define links to cell positions
         for i in range(self.grid_shape[0]):
@@ -50,7 +50,7 @@ class Grid(Widget):
                 def el_pos(self, i, j):
                     return (get(self.pos)[0] + self.margin + i * (get(cell_size)[0] + self.padding),
                              get(self.pos)[1] + self.margin + j * (get(cell_size)[1] + self.padding))
-                link_to_pos = LinkByMethod(self, lambda x, f=el_pos, gridx=i, gridy=j: f(x, gridx, gridy))
+                link_to_pos = LinkByMethod(self, lambda x, f=el_pos, gridx=i, gridy=j: f(x, gridx, gridy), self.app)
                 self.grid_poses[(i, j)] = link_to_pos
 
     def grid_pos_to_list_pos(self, grid_pos):
@@ -70,18 +70,19 @@ class Grid(Widget):
 
 class DynamicContainer(Widget):
     def __init__(self, name, app, **kwargs):
+
+        self.margin = 0  # space around childs
+
         super().__init__((0, 0), (0, 0), name, app, **kwargs)
 
     def dynamic_attributes(self):
         if self.childs:
             # child min x and y
-            min_x = min_y = 0
-            min_x = min(get(child.pos)[0] for child in self.childs if child)
-            min_y = min(get(child.pos)[1] for child in self.childs if child)
+            min_x = min(get(child.pos)[0] for child in self.childs if child) - self.margin
+            min_y = min(get(child.pos)[1] for child in self.childs if child) - self.margin
 
-            max_x = max_y = 0
-            max_x = max(get(child.pos)[0] + get(child.size)[0] for child in self.childs if child)
-            max_y = max(get(child.pos)[1] + get(child.size)[1] for child in self.childs if child)
+            max_x = max(get(child.pos)[0] + get(child.size)[0] for child in self.childs if child) + self.margin
+            max_y = max(get(child.pos)[1] + get(child.size)[1] for child in self.childs if child) + self.margin
 
             # set the size of the widget to the size of the children
             self.size = (max_x - min_x, max_y - min_y)
