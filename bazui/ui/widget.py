@@ -13,12 +13,14 @@ class Widget:
         self.selected = False  # Can be checked for event management
 
         # attributes
+        self.z = 0
         self.on_click = None
         self.on_hover = None
         self.on_drag_reception = None
         self.on_drag = None
         self.on_deselect = None
         self.childs = []
+        self.ordered_childs = []
         self.background_color = None
         self.has_surface = False
         self.can_be_selected = False
@@ -45,13 +47,13 @@ class Widget:
         if hasattr(event, "pos"):
             # Perform event handling on childs (all childs are checked)
             consumed = 0
-            for child in self.childs:
+            for child in self.ordered_childs:
                 if child:
                     consumed += child.handle_event(event, self.rect.collidepoint(event.pos) and is_under_parent)
             if consumed > 0:
                 return True
         else:
-            for child in self.childs:
+            for child in self.ordered_childs:
                 if child:
                     if child.handle_event(event):
                         return True
@@ -105,7 +107,7 @@ class Widget:
 
         if self.has_surface: # childs draw position is relative to widget position
             rendered_surface = self.access_surface()
-            for child in self.childs:
+            for child in self.ordered_childs[::-1]:
                 if child:
                     child.draw(rendered_surface, origin=get(self.pos))
             blit_pos = (get(self.pos)[0] - origin[0], get(self.pos)[1] - origin[1])
@@ -115,7 +117,7 @@ class Widget:
                 pygame.draw.rect(screen, self.background_color, self.rect.move(-origin[0], -origin[1]), border_radius=self.corner_radius)
             if self.contour_color:
                 pygame.draw.rect(screen, self.contour_color, self.rect.move(-origin[0], -origin[1]), self.contour_width, border_radius=self.corner_radius)
-            for child in self.childs:
+            for child in self.ordered_childs[::-1]:
                 if child:
                     child.draw(screen, origin)
 
@@ -147,6 +149,7 @@ class Widget:
         """
 
         self.childs.append(widget)
+        self.ordered_childs = sorted(self.childs, key=lambda x: x.z)
         return widget
 
     def remove_child(self, widget: "Widget"):
@@ -158,6 +161,7 @@ class Widget:
 
         try:
             self.childs.remove(widget)
+            self.ordered_childs = sorted(self.childs, key=lambda x: x.z)
         except ValueError:
             pass
 
@@ -175,7 +179,7 @@ class Widget:
             new_surface.blit(self.surface, (0, 0))
             self.surface = new_surface
 
-        for child in self.childs:
+        for child in self.ordered_childs:
             if child:
                 child.update()
 
