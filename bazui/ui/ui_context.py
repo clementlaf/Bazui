@@ -11,7 +11,7 @@ class UIContext:
         free_id = self.crt_max_id
         self.widgets[free_id] = widget
         self.crt_max_id += 1
-        return free_id
+        return widget
 
     def handle_events(self, event):
         self.exit_events = False  # Reset exit flag for each event
