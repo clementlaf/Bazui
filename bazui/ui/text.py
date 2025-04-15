@@ -46,6 +46,7 @@ class SingleLineText(Widget):
         self.selection_end = None
         self.time_at_update = 0
         self.previous_text = self.text
+        self.previous_size = get(self.size)
 
 
         # initialize attributes
@@ -59,6 +60,8 @@ class SingleLineText(Widget):
         self.text = text
         if self.size_auto_fit:
             self.size = self.font.size(self.text)[0], self.size[1] # add space to render cursor on last char
+            self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        elif self.previous_size != get(self.size):
             self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
         self.build_text_render()
         self.time_at_update = time.time()
@@ -250,6 +253,12 @@ class SingleLineText(Widget):
             self.previous_text = self.text
             if self.on_change:
                 self.on_change(self.text)
+
+        if get(self.size) != self.previous_size:
+            self.set_text(self.text)
+            self.previous_size = get(self.size)
+            self.time_at_update = time.time()
+
 
     def access_surface(self):
         # clear surface
@@ -473,8 +482,8 @@ class MultiLineText(SingleLineText):
         self.bound_text_to_max_lines()
         self.lines = self.decompose_text()
         if self.size_auto_fit:
-            self.size = get(self.size[0]), self.line_pos_to_px_pos(len(self.lines)-1) + self.font.get_height() + self.paragraph_spacing
-            self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
+            self.size = self.size[0], self.line_pos_to_px_pos(len(self.lines)-1) + self.font.get_height() + self.paragraph_spacing
+            self.surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
         self.build_text_render()
         self.time_at_update = time.time()
 
