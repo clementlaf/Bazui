@@ -149,7 +149,7 @@ class Widget:
         """
 
         self.childs.append(widget)
-        self.ordered_childs = sorted(self.childs, key=lambda x: x.z)
+        self.ordered_childs = sorted(self.childs, key=lambda x: x.z, reverse=True)
         return widget
 
     def remove_child(self, widget: "Widget"):
@@ -161,7 +161,7 @@ class Widget:
 
         try:
             self.childs.remove(widget)
-            self.ordered_childs = sorted(self.childs, key=lambda x: x.z)
+            self.ordered_childs = sorted(self.childs, key=lambda x: x.z, reverse=True)
         except ValueError:
             pass
 
