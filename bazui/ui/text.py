@@ -311,7 +311,7 @@ class SingleLineText(Widget):
         if self.cursor_pos == 0:
             return 0
 
-        obj_pos = self.cursor_pos - 1
+        obj_pos = max(0, self.cursor_pos - 1)
         while not(self.text[obj_pos] in al and self.text[obj_pos - 1] not in al) and obj_pos > 0:
             obj_pos -= 1
 
@@ -327,7 +327,7 @@ class SingleLineText(Widget):
         if self.cursor_pos >= len(self.text) - 1:
             return len(self.text)
 
-        obj_pos = self.cursor_pos + 1
+        obj_pos = min(self.cursor_pos + 1, len(self.text))
         while not(self.text[obj_pos] not in al and self.text[obj_pos - 1] in al) and obj_pos < len(self.text) - 1:
             obj_pos += 1
 
