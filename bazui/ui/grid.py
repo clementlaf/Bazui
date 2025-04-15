@@ -55,7 +55,7 @@ class Grid(Widget):
         self.childs[self.grid_pos_to_list_pos(grid_pos)] = child
         if child:
             child.pos = self.grid_poses[grid_pos]
-        self.ordered_childs = sorted([child for child in self.childs if child is not None], key=lambda x: x.z)
+        self.ordered_childs = sorted([child for child in self.childs if child is not None], key=lambda x: x.z, reverse=True)
         return child
 
     @property
