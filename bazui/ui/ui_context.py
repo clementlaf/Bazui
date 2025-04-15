@@ -16,8 +16,9 @@ class UIContext:
     def handle_events(self, event):
         self.exit_events = False  # Reset exit flag for each event
         for widget in self.widgets.values():
-            widget.handle_event(event)
-            if self.exit_events:
+            res = widget.handle_event(event)
+            if self.exit_events or res:
+                # If the widget consumed the event or if we are exiting, break the loop
                 break
 
     def update(self):
