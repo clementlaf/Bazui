@@ -14,6 +14,7 @@ class App:
         self.running = True
         self.state_manager = StateManager(self)
         self.library = ImageLibrary()  # Library for storing images
+        self.frame_id = 0
 
     def run(self):
         while self.running:
@@ -24,6 +25,8 @@ class App:
             pygame.display.flip()
             fps = self.clock.tick(60)
             pygame.display.set_caption(f"FPS: {1/fps*1000:.2f}")
+
+            self.frame_id += 1
 
     def quit(self, widget):
         self.running = False
