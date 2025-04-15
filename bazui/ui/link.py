@@ -14,7 +14,10 @@ class LinkAttribute(Link):
     def get(self):
         if self._last_frame == self.app.frame_id:
             return self._cached_value
-        self._cached_value = get(getattr(self.ref, self.attr))
+        try:
+            self._cached_value = get(getattr(self.ref, self.attr))
+        except AttributeError:
+            self._cached_value = None
         self._last_frame = self.app.frame_id
         return self._cached_value
 
@@ -34,8 +37,12 @@ class LinkByMethod(Link):
         return self._cached_value
 
 
-
 def get(obj):
+    res = obj
+    # if result is a link, get the value of the link
     if isinstance(obj, Link):
-        return obj.get()
-    return obj
+        res = obj.get()
+    # if result is an iterable, get each element and return it
+    if isinstance(res, (tuple, list)):
+        return [get(x) for x in res]
+    return res
