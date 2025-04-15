@@ -55,6 +55,7 @@ class Grid(Widget):
         self.childs[self.grid_pos_to_list_pos(grid_pos)] = child
         if child:
             child.pos = self.grid_poses[grid_pos]
+        self.ordered_childs = sorted([child for child in self.childs if child is not None], key=lambda x: x.z)
         return child
 
     @property
@@ -175,5 +176,6 @@ class DynamicGrid(Widget):
             if child_index in self.growable_children_indices:
                 self.growable_children_indices.remove(child_index)
             self.childs.remove(widget)
+            self.ordered_childs = sorted(self.childs, key=lambda x: x.z)
         except ValueError:
             pass
