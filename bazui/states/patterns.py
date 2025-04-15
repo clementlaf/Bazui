@@ -1,4 +1,4 @@
-from bazui.ui.link import LinkAttribute as LA, LinkByMethod as LM, get
+from bazui.ui.link import LinkByMethod as LM, get
 
 def horizontal_adjust(widgets, start_pos):
     for i, widget in enumerate(widgets):
