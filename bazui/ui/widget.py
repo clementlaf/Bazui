@@ -10,7 +10,6 @@ class Widget:
 
         # states
         self.hovered = False  # Can be checked for event management
-        self.selected = False  # Can be checked for event management
 
         # attributes
         self.z = 0
@@ -62,22 +61,19 @@ class Widget:
                     if child.handle_event(event):
                         return True
 
+        parent_hover_condition = not self.bounded_to_parent or is_under_parent
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
-                if (self.can_be_dragged and (not self.bounded_to_parent or is_under_parent)) or (self.on_click and (not self.bounded_to_parent or is_under_parent)) or (self.can_be_selected or (self.on_click and (not self.bounded_to_parent or is_under_parent))):
-                    if self.can_be_dragged and (not self.bounded_to_parent or is_under_parent): # Dragging (no event consumption)
+                if (self.can_be_dragged and parent_hover_condition) or (self.on_click and parent_hover_condition) or self.can_be_selected:
+                    if self.can_be_dragged and parent_hover_condition:
                         self.app.app_state.dragged_widget = self
-                    if self.can_be_selected or (self.on_click and (not self.bounded_to_parent or is_under_parent)):
-                        if self.can_be_selected:
-                            self.selected = True
-                    if self.on_click and (not self.bounded_to_parent or is_under_parent):
+                    if self.can_be_selected and parent_hover_condition:
+                        self.set_as_selected()
+                        self.app.app_state.selected_widget = self
+                    if self.on_click and parent_hover_condition:
                         self.app.app_state.clicked_widget = self
                         self.app.app_state.clicked_widget_pos = event.pos
                     return True  # Stop event propagation
-            else:
-                self.selected = False
-                if self.on_deselect and (not self.bounded_to_parent or is_under_parent):
-                    self.on_deselect(self)
         if event.type == pygame.MOUSEMOTION:
             if self.rect.collidepoint(event.pos):
                 self.hovered = True
@@ -91,11 +87,9 @@ class Widget:
             if self.rect.collidepoint(event.pos):
                 if self.on_drag_reception and self.app.app_state.dragged_widget:
                     self.on_drag_reception(self.app.app_state.dragged_widget)
-                if self.on_click and (not self.bounded_to_parent or is_under_parent) and self.app.app_state.clicked_widget == self:
-                    manhattan_distance = abs(event.pos[0] - self.app.app_state.clicked_widget_pos[0]) + abs(event.pos[1] - self.app.app_state.clicked_widget_pos[1])
-                    if manhattan_distance < self.app.app_state.max_move_click_distance:
-                        self.on_click(self)
-            
+                if self.on_click and parent_hover_condition and self.app.app_state.clicked_widget == self:
+                    self.on_click(self)
+
             # state reset
             if self.app.app_state.dragged_widget == self:
                 self.app.app_state.dragged_widget = None
@@ -177,7 +171,7 @@ class Widget:
         """
 
         if self.app.app_state.dragged_widget == self and self.can_be_dragged and self.on_drag:
-            self.on_drag()
+            self.on_drag(self)
         if self.hovered and self.on_hover:
             self.on_hover(self)
 
@@ -210,3 +204,28 @@ class Widget:
             self.render_method(self)
         
         return self.surface
+
+    def recursive_widget_list(self):
+        """Return a list of all widgets in the widget tree.
+
+        Returns:
+            list: A list of all widgets in the widget tree.
+        """
+        widget_list = [self]
+        for child in self.childs:
+            widget_list.extend(child.recursive_widget_list())
+        return widget_list
+
+    def set_as_selected(self):
+        currently_selected_widget = self.app.app_state.selected_widget
+        if currently_selected_widget != self and currently_selected_widget is not None and currently_selected_widget.on_deselect:
+            currently_selected_widget.on_deselect(currently_selected_widget)
+        self.app.app_state.selected_widget = self
+
+    def is_selected(self):
+        """Check if the widget is selected.
+
+        Returns:
+            bool: True if the widget is selected, False otherwise.
+        """
+        return self.app.app_state.selected_widget == self
