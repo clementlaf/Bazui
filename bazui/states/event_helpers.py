@@ -1,3 +1,4 @@
+import copy
 
 def consume_event(widget):
     """used to consume event on action on a widget
@@ -31,5 +32,41 @@ def deselect_and_despawn_widget_func(spawned_widget):
     def myfunc(widget):
         widget.remove_child(spawned_widget)
         widget.checked = False
+        return True
+    return myfunc
+
+def set_color_on_hover(hover_color):
+    """used to set the color of a widget on hover
+    """
+    def myfunc(widget):
+        if not hasattr(widget, "base_color"):
+            widget.base_color = widget.background_color
+        widget.background_color = hover_color
+        return True
+    return myfunc
+def reset_color_on_hover():
+    """used to reset the color of a widget on hover
+    """
+    def myfunc(widget):
+        widget.background_color = widget.base_color
+        return True
+    return myfunc
+
+def set_text_color_on_hover(hover_color):
+    """used to set the color of a widget on hover
+    """
+    def myfunc(widget):
+        if not hasattr(widget, "base_text_color"):
+            widget.base_text_color = widget.text_color
+        widget.text_color = hover_color
+        widget.set_text(widget.text)
+        return True
+    return myfunc
+def reset_text_color_on_hover():
+    """used to reset the color of a widget on hover
+    """
+    def myfunc(widget):
+        widget.text_color = widget.base_text_color
+        widget.set_text(widget.text)
         return True
     return myfunc
