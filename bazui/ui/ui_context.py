@@ -59,3 +59,13 @@ class UIContext:
         for widget_id, widget in self.widgets.items():
             txt.append(f"{widget_id}: {widget}")
         return "\n".join(txt)
+
+    def recursive_widget_list(self):
+        """Recursively get all widgets in the context."""
+        widget_list = []
+        for widget in self.widgets.values():
+            if hasattr(widget, 'childs'):
+                widget_list.extend(widget.recursive_widget_list())
+            else:
+                widget_list.append(widget)
+        return widget_list
