@@ -21,7 +21,8 @@ class UIContext:
             res = widget.handle_event(event)
             if self.exit_events or res:
                 # If the widget consumed the event or if we are exiting, break the loop
-                break
+                return res
+        return False
 
     def update(self):
         for widget in self.sorted_widgets:
