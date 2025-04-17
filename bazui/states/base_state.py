@@ -15,9 +15,14 @@ class BaseState:
                 self.app.quit(None)
             res = self.ui_context.handle_events(event)
             if res:
-                # If the event was consumed by a widget, break the loop
-                break
+                continue
             self.hotkeys.handle_events(event)
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                # left click not consumed by any widget
+                currently_selected_widget = self.app.app_state.selected_widget
+                if currently_selected_widget is not None and currently_selected_widget.on_deselect:
+                    currently_selected_widget.on_deselect(currently_selected_widget)
+                self.app_state.selected_widget = None
 
     def update(self):
         self.ui_context.update()
