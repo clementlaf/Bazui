@@ -37,7 +37,6 @@ def parse_shortcut(shortcut):
                 raise ValueError(f"Invalid key: {part}")
     if key is None:
         raise ValueError("No key specified in shortcut")
-    print(f"Parsed shortcut: {shortcut} -> key: {key}, mods: {mods}")
     return key, mods
 
 class HotkeyManager:
