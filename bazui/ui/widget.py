@@ -16,6 +16,7 @@ class Widget:
         self.z = 0
         self.on_click = None
         self.on_hover = None
+        self.on_unhover = None
         self.on_drag_reception = None
         self.on_drag = None
         self.on_deselect = None
@@ -41,7 +42,10 @@ class Widget:
 
     @property
     def rect(self):
-        return pygame.Rect(get(self.pos), get(self.size))
+        try:
+            return pygame.Rect(get(self.pos), get(self.size))
+        except TypeError:
+            print(get(self.pos), get(self.size))
 
     def handle_event(self, event, is_under_parent=True):
         if hasattr(event, "pos"):
@@ -79,6 +83,9 @@ class Widget:
                 self.hovered = True
                 return True
             else:
+                if self.hovered:
+                    if self.on_unhover:
+                        self.on_unhover(self)
                 self.hovered = False
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if self.rect.collidepoint(event.pos):
@@ -172,7 +179,7 @@ class Widget:
         if self.app.app_state.dragged_widget == self and self.can_be_dragged and self.on_drag:
             self.on_drag()
         if self.hovered and self.on_hover:
-            self.on_hover()
+            self.on_hover(self)
 
         if self.has_surface and self.surface.size != get(self.size):
             new_surface = pygame.Surface(get(self.size), pygame.SRCALPHA)
