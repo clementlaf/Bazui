@@ -24,6 +24,7 @@ class SingleLineText(Widget):
 
         self.background_color = (0, 0, 0, 0)
         self.on_drag = self.base_comportment_when_dragged
+        self.on_deselect = self.base_comportment_when_deselected
 
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -72,15 +73,11 @@ class SingleLineText(Widget):
     def handle_event(self, event, is_under_parent=True):
         return_code = super().handle_event(event, is_under_parent)
 
-        if event.type == pygame.MOUSEBUTTONDOWN and self.selected:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button ==1 and self.is_selected() and self.rect.collidepoint(event.pos) and (not self.bounded_to_parent or is_under_parent):
             self.cursor_pos = self.mouse_to_cursor(event.pos)
             self.time_at_update = time.time()
             self.reset_selection()
             return 1
-
-        if event.type == pygame.MOUSEBUTTONDOWN and self.selection_start is not None:
-            if not self.rect.collidepoint(event.pos):
-                self.reset_selection()
 
         if self.editable:
 
@@ -90,7 +87,7 @@ class SingleLineText(Widget):
                     self.repeatable_first_activated = 0
                     self.repeatable_last_activated = 0
 
-            if event.type == pygame.KEYDOWN and self.selected:
+            if event.type == pygame.KEYDOWN and self.is_selected():
                 if (pygame.key.get_mods() & pygame.KMOD_SHIFT) and (pygame.key.get_mods() & pygame.KMOD_CTRL):
                     if event.key == pygame.K_LEFT: # CTRL + SHIFT + LEFT (select word to the left)
                         if self.selection_start is None:
@@ -259,7 +256,6 @@ class SingleLineText(Widget):
             self.previous_size = get(self.size)
             self.time_at_update = time.time()
 
-
     def access_surface(self):
         # clear surface
         super().access_surface()
@@ -270,7 +266,7 @@ class SingleLineText(Widget):
             sel_rect = pygame.Rect(self.font.size(self.text[:sel_min])[0], 0, self.font.size(self.text[sel_min:sel_max])[0], get(self.size)[1])
             pygame.draw.rect(self.surface, self.selection_color, sel_rect)
         # render cursor
-        if self.selected and self.editable:
+        if self.is_selected() and self.editable:
             # draw cursor
             if (time.time() - self.time_at_update) % 1 < 0.5:
                 pygame.draw.rect(self.surface, self.cursor_color, (self.font.size(self.text[:self.cursor_pos])[0], 0, 2, get(self.size)[1]))
@@ -358,14 +354,19 @@ class SingleLineText(Widget):
         self.selection_start = None
         self.selection_end = None
 
-    def base_comportment_when_dragged(self):
+    def base_comportment_when_dragged(self, widget):
         mouse_pos = self.app.app_state.mouse_pos
         crt_cursor_pos = self.mouse_to_cursor(mouse_pos)
+        self.cursor_pos = crt_cursor_pos
         if self.selection_start is None:
             self.selection_start = self.cursor_pos
-        self.cursor_pos = crt_cursor_pos
         self.selection_end = self.cursor_pos
         self.time_at_update = time.time()
+        self.set_as_selected()
+
+    def base_comportment_when_deselected(self, widget):
+        self.reset_selection()
+
 
 
 class MultiLineText(SingleLineText):
@@ -520,7 +521,7 @@ class MultiLineText(SingleLineText):
                     pygame.draw.rect(self.surface, self.selection_color, sel_rect)
 
         # render cursor
-        if self.selected and self.editable:
+        if self.is_selected() and self.editable:
             # draw cursor
             if (time.time() - self.time_at_update) % 1 < 0.5:
                 line_pos, char_pos = self.text_pos_to_line_pos(self.cursor_pos)
@@ -577,7 +578,7 @@ class MultiLineText(SingleLineText):
         
         if self.editable:
 
-            if event.type == pygame.KEYDOWN and self.selected:
+            if event.type == pygame.KEYDOWN and self.is_selected():
 
                 if event.key == pygame.K_RETURN:
                     self.write("\n")
@@ -594,6 +595,8 @@ class MultiLineText(SingleLineText):
             if len(lines) > self.max_lines:
                 self.text = "\n".join(lines[:self.max_lines])
                 self.bound_cursor()
+
+
 
 
 class Line:
