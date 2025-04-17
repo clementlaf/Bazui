@@ -36,6 +36,20 @@ class LinkByMethod(Link):
         self._last_frame = self.app.frame_id
         return self._cached_value
 
+class MultiLinkByMethod(Link):
+    def __init__(self, refs, method, app):
+        self._last_frame = -1
+        self._cached_value = None
+        self.refs = refs
+        self.method = method
+        self.app = app
+
+    def get(self):
+        if self._last_frame == self.app.frame_id:
+            return self._cached_value
+        self._cached_value = get(self.method(self.refs))
+        self._last_frame = self.app.frame_id
+        return self._cached_value
 
 def get(obj):
     res = obj
